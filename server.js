@@ -22,6 +22,12 @@ const Message = mongoose.model('Message', new mongoose.Schema({ senderId: String
 // --- ESSENTIAL APIs ---
 
 // Users & Auth (Basic Login)
+// Register a new user (Hackathon simple version)
+app.post('/register', async (req, res) => {
+  const { username, password, role } = req.body;
+  const user = await new User({ username, password, role }).save();
+  res.json({ message: 'User created successfully', username: user.username, role: user.role });
+});
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username, password });
