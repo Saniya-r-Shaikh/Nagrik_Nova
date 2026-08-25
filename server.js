@@ -13,7 +13,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/nagrik_nova')
 
 // --- MODELS (6 Collections) ---
 const User = mongoose.model('User', new mongoose.Schema({ username: String, password: String, role: String }));
-const Ticket = mongoose.model('Ticket', new mongoose.Schema({ title: String, description: String, status: { type: String, default: 'open' }, createdAt: { type: Date, default: Date.now } }));
+const Ticket = mongoose.model('Ticket', new mongoose.Schema({ ticketId: String, title: String, description: String, status: { type: String, default: 'open' }, createdAt: { type: Date, default: Date.now } }));
 const Challenge = mongoose.model('Challenge', new mongoose.Schema({ title: String, description: String }));
 const Proposal = mongoose.model('Proposal', new mongoose.Schema({ challengeId: String, solution: String }));
 const SensorData = mongoose.model('SensorData', new mongoose.Schema({ sensorType: String, reading: String, timestamp: { type: Date, default: Date.now } }));
@@ -31,7 +31,14 @@ app.post('/login', async (req, res) => {
 
 // Complaints / Tickets
 app.post('/complaints', async (req, res) => {
-  const ticket = await new Ticket(req.body).save();
+  // Hackathon logic: count existing tickets and format the new ID
+  const count = await Ticket.countDocuments();
+  const generatedId = `TKT-${(count + 1).toString().padStart(3, '0')}`; // Makes TKT-001, TKT-002, etc.
+
+  // Merge the new ID with the data from the frontend
+  const ticketData = { ...req.body, ticketId: generatedId };
+  
+  const ticket = await new Ticket(ticketData).save();
   res.json({ message: 'Complaint logged', ticket });
 });
 app.get('/tickets', async (req, res) => res.json(await Ticket.find()));
