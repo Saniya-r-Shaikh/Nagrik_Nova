@@ -19,12 +19,15 @@ const Ticket = mongoose.model('Ticket', new mongoose.Schema({
   title: String, 
   description: String, 
   location: String,
+
+  // --- THE MISSING PIECE ---
+  submittedBy: String, 
+  
   submitterRole: { type: String, default: 'citizen' }, 
   analyzed: { type: Boolean, default: false }, 
   status: { type: String, default: 'open' }, 
   createdAt: { type: Date, default: Date.now },
   
-  // --- ADDED AI FIELDS SO MONGOOSE DOESN'T DELETE THEM ---
   domain: String,
   priority: String,
   requiredExpertise: [String],
@@ -119,20 +122,19 @@ app.get('/api/issues', async (req, res) => {
 });
 app.post('/api/issues', async (req, res) => {
   try {
-    // 1. Grab the data Saniya's frontend just sent
-    const { title, description, location } = req.body; 
+    // 1. ADD submittedBy HERE so the backend grabs it
+    const { title, description, location, submittedBy } = req.body; 
     console.log("NEW TICKET SUBMITTED:", title);
 
-    // 2. Save it to your database
     const newTicket = await new Ticket({ 
       title, 
       description, 
       location,
+      submittedBy, // 2. ADD IT HERE so it saves to the database
       submitterRole: 'citizen',
       analyzed: false
     }).save();
     
-    // 3. Send the newly saved ticket back so the React UI updates instantly!
     res.json(newTicket);
   } catch (error) {
     console.error("CRASH IN POST /api/issues:", error);

@@ -1,3 +1,5 @@
+import ARReporter from "./ARReporter";
+import VRCommandCenter from "./VRCommandCenter";
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -29,7 +31,7 @@ import {
 } from "lucide-react";
 import "./styles.css";
 import Footer from "./Footer";
-const api = axios.create({ baseURL: "http://localhost:5000/api" });
+const api = axios.create({ baseURL: `http://${window.location.hostname}:5000/api` });
 api.interceptors.request.use((c) => {
   const t = localStorage.getItem("nn-token");
   if (t) c.headers.Authorization = `Bearer ${t}`;
@@ -58,6 +60,7 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home user={auth.user} />} />
+          <Route path="/vr-map" element={<Require user={auth.user}><VRCommandCenter /></Require>} />
           <Route path="/login" element={<Login auth={auth} />} />
           <Route path="/register" element={<Register auth={auth} />} />
           <Route
@@ -112,6 +115,11 @@ function Nav({ auth }) {
         <NavLink to="/issues">Explore issues</NavLink>
         {auth.user && ["citizen", "ngo"].includes(auth.user.role) && (
           <NavLink to="/dashboard">My dashboard</NavLink>
+        )}
+        {auth.user && auth.user.role === "admin" && (
+          <NavLink to="/vr-map" className="vr-link">
+            <Sparkles size={15} /> VR Command Center
+          </NavLink>
         )}
         {auth.user ? (
           <>
@@ -500,6 +508,7 @@ function Dashboard({ user }) {
     [msg, setMsg] = useState(""),
     [err, setErr] = useState("");
   useEffect(() => {
+    // FIX: Wrapped in curly braces so it doesn't return a Promise
     api
       .get("/issues")
       .then((r) =>
@@ -508,21 +517,19 @@ function Dashboard({ user }) {
             (i) =>
               i.submittedBy?._id === user.id || i.submittedBy === user.id,
           ),
-        )
+        ),
       );
   }, [user.id]);
   const post = async (e) => {
     e.preventDefault();
-
-    // THE GUARDRAIL:
-    if (!data.title.trim() || !data.description.trim()) {
-      alert("Please fill out the title and description before submitting!");
-      return; 
-    }
-
     setErr("");
     try {
-      const r = await api.post("/issues", data);
+      // FIX: We are injecting the user ID and role right here
+      const r = await api.post("/issues", {
+        ...data,
+        submittedBy: user._id || user.id,
+        submitterRole: user.role
+      });
       setIssues([r.data, ...issues]);
       setData({ title: "", description: "", location: "" });
       setMsg("Your issue is now visible to the Nagrik Nova network.");
@@ -569,11 +576,24 @@ function Dashboard({ user }) {
               }
             />
           </label>
+        
           <Field
             label="Where is this happening?"
             value={data.location}
             onChange={(e) => setData({ ...data, location: e.target.value })}
           />
+          <label>Capture exact spatial location (Optional)</label>
+<ARReporter 
+  onLocationSaved={(coords) => {
+    // If we successfully grabbed GPS, use that! Otherwise, fallback to the AR coordinates.
+    const finalLocation = coords.lat && coords.lng 
+      ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` 
+      : `AR Spatial: [${coords.x.toFixed(2)}, ${coords.z.toFixed(2)}]`;
+
+    // Update your form data state
+    setData({ ...data, location: finalLocation });
+  }} 
+/>
           {msg && <div className="success">{msg}</div>}
           {err && <div className="error">{err}</div>}
           <button className="btn full">
@@ -599,14 +619,12 @@ function Detail({ user }) {
     [issue, setIssue] = useState(null),
     [busy, setBusy] = useState(false),
     [err, setErr] = useState("");
-  const get = () =>
+  useEffect(() => {
     api
       .get("/issues/" + id)
       .then((r) => setIssue(r.data))
       .catch(() => setErr("This issue is no longer available."));
-  useEffect(() => {
-  get();
-}, [id]);
+  }, [id]);
   const analyze = async () => {
     setBusy(true);
     try {
