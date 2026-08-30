@@ -19,11 +19,9 @@ export default function AIChatWidget() {
     setLoading(true);
 
     try {
-      // Remember to ensure this URL matches your live Render domain exactly
       const response = await axios.post('https://nagrik-nova.onrender.com/api/ai/chat', {
         message: userMessage
       });
-
       setMessages((prev) => [...prev, { role: 'agent', text: response.data.message }]);
     } catch (error) {
       console.error('Chat error:', error);
@@ -34,34 +32,34 @@ export default function AIChatWidget() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div style={{ position: 'fixed', bottom: '25px', right: '25px', zIndex: 9999, fontFamily: 'inherit' }}>
       {isOpen ? (
-        <div className="w-80 bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
-          <div className="bg-emerald-600 text-white p-4 font-bold flex justify-between items-center">
+        <div style={{ width: '340px', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid #eaeaea' }}>
+          <div style={{ backgroundColor: '#059669', color: '#fff', padding: '16px', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>Nova AI Agent</span>
-            <button onClick={() => setIsOpen(false)} className="text-white hover:text-gray-200">✖</button>
+            <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '18px' }}>✖</button>
           </div>
           
-          <div className="h-64 overflow-y-auto p-4 space-y-3 bg-gray-50">
+          <div style={{ height: '320px', overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#f9fafb' }}>
             {messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`p-2 rounded-lg max-w-[80%] ${msg.role === 'user' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-800'}`}>
+              <div key={idx} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                <div style={{ padding: '10px 14px', borderRadius: '12px', maxWidth: '85%', backgroundColor: msg.role === 'user' ? '#059669' : '#e5e7eb', color: msg.role === 'user' ? '#fff' : '#1f2937', fontSize: '14px', lineHeight: '1.4' }}>
                   {msg.text}
                 </div>
               </div>
             ))}
-            {loading && <div className="text-sm text-gray-500 italic">Nova is typing...</div>}
+            {loading && <div style={{ fontSize: '13px', color: '#6b7280', fontStyle: 'italic' }}>Nova is thinking...</div>}
           </div>
 
-          <form onSubmit={sendMessage} className="p-3 bg-white border-t flex gap-2">
+          <form onSubmit={sendMessage} style={{ padding: '12px', backgroundColor: '#fff', borderTop: '1px solid #eaeaea', display: 'flex', gap: '8px' }}>
             <input 
               type="text" 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..." 
-              className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-emerald-500 text-black"
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '14px', outline: 'none' }}
             />
-            <button type="submit" disabled={loading} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-50">
+            <button type="submit" disabled={loading} style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '0 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', opacity: loading ? 0.7 : 1 }}>
               Send
             </button>
           </form>
@@ -69,7 +67,7 @@ export default function AIChatWidget() {
       ) : (
         <button 
           onClick={() => setIsOpen(true)} 
-          className="bg-emerald-600 text-white p-4 rounded-full shadow-lg hover:bg-emerald-700 transition-all font-bold"
+          style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '16px 24px', borderRadius: '50px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
         >
           💬 Chat with Nova
         </button>
