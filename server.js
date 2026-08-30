@@ -3,7 +3,6 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -20,15 +19,11 @@ const Ticket = mongoose.model('Ticket', new mongoose.Schema({
   title: String, 
   description: String, 
   location: String,
-
-  // --- THE MISSING PIECE ---
   submittedBy: String, 
-  
   submitterRole: { type: String, default: 'citizen' }, 
   analyzed: { type: Boolean, default: false }, 
   status: { type: String, default: 'open' }, 
   createdAt: { type: Date, default: Date.now },
-  
   domain: String,
   priority: String,
   requiredExpertise: [String],
@@ -43,11 +38,10 @@ const Message = mongoose.model('Message', new mongoose.Schema({ senderId: String
 // --- ESSENTIAL APIs ---
 
 // Users & Auth (Basic Login)
-// Register a new user (Hackathon simple version)
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password, role, name } = req.body; 
-    console.log("REGISTER ATTEMPT:", email); // <-- Snitch log
+    console.log("REGISTER ATTEMPT:", email); 
 
     const user = await new User({ username: email, password, role }).save();
     
@@ -62,15 +56,15 @@ app.post('/api/auth/register', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("CRASH IN REGISTER:", error); // <-- Snitch log
-    res.status(500).json({ message: 'Error creating account' }); // Changed to 'message' for the frontend
+    console.error("CRASH IN REGISTER:", error); 
+    res.status(500).json({ message: 'Error creating account' }); 
   }
 });
 
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body; 
-    console.log("LOGIN ATTEMPT:", email, password); // <-- Snitch log
+    console.log("LOGIN ATTEMPT:", email, password); 
 
     const user = await User.findOne({ username: email, password });
     
@@ -88,42 +82,35 @@ app.post('/api/auth/login', async (req, res) => {
       });
     } else {
       console.log("LOGIN FAILED: Wrong email or password");
-      // Saniya's code looks for 'message', not 'error', so we fix that here!
       res.status(401).json({ message: 'Invalid credentials. Wrong email or password.' });
     }
   } catch (error) {
-    console.error("CRASH IN LOGIN:", error); // <-- Snitch log
+    console.error("CRASH IN LOGIN:", error); 
     res.status(500).json({ message: 'Server crash during login' });
   }
 });
+
 // Complaints / Tickets
 app.post('/complaints', async (req, res) => {
-  // Hackathon logic: count existing tickets and format the new ID
   const count = await Ticket.countDocuments();
-  const generatedId = `TKT-${(count + 1).toString().padStart(3, '0')}`; // Makes TKT-001, TKT-002, etc.
-
-  // Merge the new ID with the data from the frontend
+  const generatedId = `TKT-${(count + 1).toString().padStart(3, '0')}`; 
   const ticketData = { ...req.body, ticketId: generatedId };
-  
   const ticket = await new Ticket(ticketData).save();
   res.json({ message: 'Complaint logged', ticket });
 });
-// Add this route to catch the frontend's request for issues
+
 app.get('/api/issues', async (req, res) => {
   try {
-    // Fetching from your Ticket model!
     const issues = await Ticket.find(); 
-    
-    // Send the array of tickets back to the frontend
     res.json(issues);
   } catch (error) {
     console.error("CRASH IN /api/issues:", error); 
     res.status(500).json({ error: 'Failed to fetch issues' });
   }
 });
+
 app.post('/api/issues', async (req, res) => {
   try {
-    // 1. ADD submittedBy HERE so the backend grabs it
     const { title, description, location, submittedBy } = req.body; 
     console.log("NEW TICKET SUBMITTED:", title);
 
@@ -131,7 +118,7 @@ app.post('/api/issues', async (req, res) => {
       title, 
       description, 
       location,
-      submittedBy, // 2. ADD IT HERE so it saves to the database
+      submittedBy, 
       submitterRole: 'citizen',
       analyzed: false
     }).save();
@@ -142,27 +129,21 @@ app.post('/api/issues', async (req, res) => {
     res.status(500).json({ message: 'Server crash saving the issue' });
   }
 });
-// Fetch a single issue by its ID
+
 app.get('/api/issues/:id', async (req, res) => {
   try {
-    // Grab the ID from the URL
     const { id } = req.params;
-    
-    // Find that specific ticket in your database
     const issue = await Ticket.findById(id);
-    
-    // If someone clicks a deleted/fake ID, tell the frontend it's missing
     if (!issue) {
       return res.status(404).json({ message: 'Issue not found' });
     }
-    
-    // Send the full ticket data back to Saniya's UI!
     res.json(issue);
   } catch (error) {
     console.error("CRASH IN GET /api/issues/:id:", error);
     res.status(500).json({ message: 'Failed to fetch the issue details' });
   }
 });
+
 app.get('/tickets', async (req, res) => res.json(await Ticket.find()));
 app.get('/tickets/:id', async (req, res) => res.json(await Ticket.findById(req.params.id)));
 app.put('/tickets/:id', async (req, res) => {
@@ -170,23 +151,16 @@ app.put('/tickets/:id', async (req, res) => {
   res.json({ message: 'Ticket updated', ticket });
 });
 
-// Challenges
+// Challenges, Proposals, Sensor Data, Messages
 app.post('/challenges', async (req, res) => res.json(await new Challenge(req.body).save()));
 app.get('/challenges', async (req, res) => res.json(await Challenge.find()));
-
-// Proposals
 app.post('/proposals', async (req, res) => res.json(await new Proposal(req.body).save()));
 app.get('/proposals', async (req, res) => res.json(await Proposal.find()));
-
-// Sensor Data
 app.post('/sensor-data', async (req, res) => res.json(await new SensorData(req.body).save()));
 app.get('/sensor-data', async (req, res) => res.json(await SensorData.find()));
-
-// Messages
 app.post('/messages', async (req, res) => res.json(await new Message(req.body).save()));
 app.get('/messages', async (req, res) => res.json(await Message.find()));
 
-// --- AI ANALYSIS ROUTE ---
 // --- AI ANALYSIS ROUTE ---
 app.post('/api/issues/:id/analyze', async (req, res) => {
   try {
@@ -198,17 +172,11 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
     }
 
     console.log(`[AI AGENT] Asking Gemini to analyze: ${ticket.title}...`);
+    console.log("🔑 API KEY STATUS:", process.env.GEMINI_API_KEY ? "LOADED" : "MISSING");
 
-    // Initialize Gemini
-    // This will tell us if your .env file is actually working!
-console.log("🔑 API KEY STATUS:", process.env.GEMINI_API_KEY ? "LOADED" : "MISSING");
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// Testing the new 3.1-flash-lite model!
-const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
-
-    // The Prompt
     const prompt = `
       You are an expert civic planning AI for a platform called Nagrik Nova.
       Analyze this community issue:
@@ -224,20 +192,15 @@ const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
       - "solutionIdea": A concise, 2-sentence actionable solution pathway.
     `;
 
-    // Call the API
     const result = await model.generateContent(prompt);
     
-    // Clean up markdown blocks
     let responseText = result.response.text();
     responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     
-    // Snitch log
     console.log("RAW AI RESPONSE:", responseText); 
     
-    // Parse response
     const aiData = JSON.parse(responseText);
 
-    // Update ticket
     ticket.analyzed = true;
     ticket.domain = aiData.domain;
     ticket.priority = aiData.priority;
@@ -262,18 +225,20 @@ const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
     res.status(500).json({ message: 'AI Analysis failed' });
   }
 });
+
+// --- AI CHATBOT ROUTE ---
 app.post('/api/ai/chat', async (req, res) => {
     try {
         const { message } = req.body;
         
-        // 1. Initialize the AI (Using your existing GEMINI_API_KEY!)
+        // 1. Initialize the AI 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({
-            model: "gemini-3.1-flash-lite", // Matching your ultra-fast analysis model
+            model: "gemini-3.1-flash-lite",
             generationConfig: { responseMimeType: "application/json" }
         });
 
-        // 2. Fetch recent database context (THE FIX: Using Ticket instead of Issue)
+        // 2. Fetch recent database context using Ticket
         const dbContext = await Ticket.find({ status: { $ne: 'resolved' } }).limit(3); 
         const dbContextString = dbContext.length > 0
             ? JSON.stringify(dbContext.map(i => ({ description: i.description, status: i.status })))
@@ -288,7 +253,6 @@ app.post('/api/ai/chat', async (req, res) => {
         let aiResultData = JSON.parse(aiResponseString);
         
         if (aiResultData.status === 'final_report') {
-            // THE FIX: Save it using the Ticket model!
             const newTicket = new Ticket(aiResultData.dataToSave);
             await newTicket.save();
             aiResultData.message += ` (Report has been submitted to the dashboard!)`;
@@ -301,5 +265,6 @@ app.post('/api/ai/chat', async (req, res) => {
         res.status(500).json({ error: "Failed to process AI request." });
     }
 });
+
 // --- START SERVER ---
 app.listen(5000, () => console.log('Server live on port 5000'));
