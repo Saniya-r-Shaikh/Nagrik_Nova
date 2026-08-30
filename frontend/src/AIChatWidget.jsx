@@ -5,7 +5,7 @@ export default function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
-    { role: 'agent', text: 'Hi! I am Nova, the AI assistant for Talegaon. You can report an issue or ask about existing ones. How can I help?' }
+    { role: 'agent', text: 'Hi! I am Nova, the nationwide AI assistant for Nagrik Nova. You can report an issue anywhere in India or ask about existing ones. How can I help?' }
   ]);
   const [loading, setLoading] = useState(false);
 

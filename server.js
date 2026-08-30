@@ -251,11 +251,11 @@ app.post('/api/ai/chat', async (req, res) => {
             : "No previous conversation.";
 
         const prompt = `
-        You are Nova, the official Civic AI Agent for Talegaon Dabhade. 
-        Help citizens report infrastructure issues conversationally.
+        You are Nova, the official Nationwide Civic AI Agent for Nagrik Nova across India. 
+        Help citizens report infrastructure issues conversationally for any city or state.
         
         Read the conversation history, then reply to the citizen's latest message.
-        You must extract: description, category (e.g., Infrastructure, Road Safety), location, and severity (1 to 3).
+        You must extract: description, category (e.g., Infrastructure, Road Safety), location (anywhere in India), and severity (1 to 3).
         
         [CONVERSATION HISTORY]
         ${historyTranscript}
