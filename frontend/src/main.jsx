@@ -1,4 +1,5 @@
 import CitizenMap from "./CitizenMap";
+import AIChatWidget from './AIChatWidget';
 import ARReporter from "./ARReporter";
 import VRCommandCenter from "./VRCommandCenter";
 import React, { useEffect, useState } from "react";
@@ -151,6 +152,7 @@ function App() {
         </Routes>
       </main>
       <Footer />
+      <AIChatWidget /> {/* <-- ADDED RIGHT HERE! */}
     </>
   );
 }
