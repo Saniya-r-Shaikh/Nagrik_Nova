@@ -77,7 +77,7 @@ const indiaData = {
   "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol"]
 };
 
-const api = axios.create({ baseURL: `http://${window.location.hostname}:5000/api` });
+const api = axios.create({ baseURL: 'https://nagrik-nova.onrender.com/api' });
 api.interceptors.request.use((c) => {
   const t = localStorage.getItem("nn-token");
   if (t) c.headers.Authorization = `Bearer ${t}`;
