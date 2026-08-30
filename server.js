@@ -228,9 +228,11 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
 
 // --- AI CHATBOT ROUTE ---
 // --- AI CHATBOT ROUTE ---
+// --- AI CHATBOT ROUTE ---
 app.post('/api/ai/chat', async (req, res) => {
     try {
-        const { message } = req.body;
+        // THE FIX: Catch the history array from React
+        const { message, history } = req.body;
         
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({
@@ -243,16 +245,30 @@ app.post('/api/ai/chat', async (req, res) => {
             ? JSON.stringify(dbContext.map(i => ({ description: i.description, status: i.status })))
             : "No active local issues found.";
 
-        // THE FIX: Injecting the system instructions and exact JSON schema directly into the backend prompt
+        // THE FIX: Convert the history array into a readable script for the AI
+        const historyTranscript = history && history.length > 0
+            ? history.map(m => `${m.role === 'user' ? 'Citizen' : 'Nova'}: ${m.text}`).join('\n')
+            : "No previous conversation.";
+
         const prompt = `
         You are Nova, the official Civic AI Agent for Talegaon Dabhade. 
         Help citizens report infrastructure issues conversationally.
         
+        Read the conversation history, then reply to the citizen's latest message.
         You must extract: description, category (e.g., Infrastructure, Road Safety), location, and severity (1 to 3).
         
+        [CONVERSATION HISTORY]
+        ${historyTranscript}
+        
+        [CURRENT DATABASE CONTEXT]
+        ${dbContextString}
+        
+        [CITIZEN'S LATEST MESSAGE]
+        Citizen: "${message}"
+
         CRITICAL INSTRUCTION: You MUST respond ONLY with a raw JSON object using exactly these keys. Do not include markdown:
         {
-          "message": "Your conversational reply asking the user for missing details, or thanking them if the report is complete.",
+          "message": "Your conversational reply based on the history. Ask for missing details, or thank them if the report is complete.",
           "dataToSave": {
             "description": "extracted string or empty",
             "category": "extracted string or empty",
@@ -261,27 +277,28 @@ app.post('/api/ai/chat', async (req, res) => {
           },
           "status": "processing or final_report"
         }
-        
-        User Message: "${message}"
-        [DATABASE CONTEXT]: ${dbContextString}
         `;
 
         const result = await model.generateContent(prompt);
         let aiResponseString = result.response.text();
         
-        // Clean up markdown in case the model forgets the rule
         aiResponseString = aiResponseString.replace(/```json/g, '').replace(/```/g, '').trim();
         let aiResultData = JSON.parse(aiResponseString);
         
+        // Failsafe to prevent MongoDB crashes if data is missing
         if (aiResultData.status === 'final_report') {
-            const newTicket = new Ticket(aiResultData.dataToSave);
-            await newTicket.save();
-            aiResultData.message += ` (Report has been automatically submitted to the dashboard!)`;
+            if (aiResultData.dataToSave.description && aiResultData.dataToSave.location) {
+                const newTicket = new Ticket(aiResultData.dataToSave);
+                await newTicket.save();
+                aiResultData.message += ` (Report has been automatically submitted to the dashboard!)`;
+            } else {
+                // If it tries to save too early, force it to keep asking
+                aiResultData.status = 'processing';
+                aiResultData.message = "I almost have everything, but I just need to confirm the exact location and description before I save this. Could you clarify?";
+            }
         }
 
-        // Failsafe: if the AI uses the wrong key name, we still catch the text
-        const finalMessage = aiResultData.message || aiResultData.response || aiResultData.text || "I understood, but my response got a bit jumbled. Could you clarify?";
-
+        const finalMessage = aiResultData.message || "I understood, but my response got jumbled. Could you clarify?";
         res.json({ message: finalMessage });
 
     } catch (error) {
