@@ -1,3 +1,4 @@
+import CitizenMap from "./CitizenMap";
 import ARReporter from "./ARReporter";
 import VRCommandCenter from "./VRCommandCenter";
 import React, { useEffect, useState } from "react";
@@ -28,30 +29,82 @@ import {
   Sparkles,
   Users,
   X,
+  Wrench,          // <-- ADD THIS
+  ClipboardList,
+  ThumbsUp,       // <-- ADD THIS
+  HandHeart       // <-- ADD THIS   // <-- ADD THIS
 } from "lucide-react";
 import "./styles.css";
 import Footer from "./Footer";
+
+// --- INDIAN STATES & CITIES DATA DICTIONARY ---
+const indiaData = {
+  "Andaman and Nicobar Islands": ["Port Blair"],
+  "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Tirupati"],
+  "Arunachal Pradesh": ["Itanagar", "Tawang", "Pasighat", "Ziro"],
+  "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat"],
+  "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur"],
+  "Chandigarh": ["Chandigarh"],
+  "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba"],
+  "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa"],
+  "Delhi": ["New Delhi", "North Delhi", "South Delhi", "East Delhi"],
+  "Goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa"],
+  "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Gandhinagar"],
+  "Haryana": ["Gurugram", "Faridabad", "Panipat", "Ambala", "Karnal"],
+  "Himachal Pradesh": ["Shimla", "Manali", "Dharamshala", "Mandi"],
+  "Jammu and Kashmir": ["Srinagar", "Jammu", "Anantnag", "Baramulla"],
+  "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro"],
+  "Karnataka": ["Bengaluru", "Mysuru", "Mangaluru", "Hubballi", "Belagavi"],
+  "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur"],
+  "Ladakh": ["Leh", "Kargil"],
+  "Lakshadweep": ["Kavaratti"],
+  "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain"],
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Thane", "Aurangabad", "Talegaon Dabhade", "Pimpri-Chinchwad"],
+  "Manipur": ["Imphal", "Churachandpur", "Thoubal"],
+  "Meghalaya": ["Shillong", "Tura", "Jowai"],
+  "Mizoram": ["Aizawl", "Lunglei", "Champhai"],
+  "Nagaland": ["Kohima", "Dimapur", "Mokokchung"],
+  "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Brahmapur"],
+  "Puducherry": ["Pondicherry", "Auroville", "Yanam"],
+  "Punjab": ["Chandigarh", "Ludhiana", "Amritsar", "Jalandhar", "Patiala"],
+  "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner"],
+  "Sikkim": ["Gangtok", "Namchi", "Pelling"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"],
+  "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar"],
+  "Tripura": ["Agartala", "Dharmanagar", "Udaipur"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Agra", "Varanasi", "Noida", "Prayagraj"],
+  "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Rishikesh"],
+  "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol"]
+};
+
 const api = axios.create({ baseURL: `http://${window.location.hostname}:5000/api` });
 api.interceptors.request.use((c) => {
   const t = localStorage.getItem("nn-token");
   if (t) c.headers.Authorization = `Bearer ${t}`;
   return c;
 });
+
 const useAuth = () => {
   const [user, setUser] = useState(() =>
     JSON.parse(localStorage.getItem("nn-user") || "null"),
   );
+  
   const signIn = (d) => {
     localStorage.setItem("nn-token", d.token);
     localStorage.setItem("nn-user", JSON.stringify(d.user));
     setUser(d.user);
   };
+  
   const out = () => {
-    localStorage.clear();
+    // THE FIX: Target exactly what to delete instead of wiping the whole storage!
+    localStorage.removeItem("nn-token");
+    localStorage.removeItem("nn-user");
     setUser(null);
   };
+  
   return { user, signIn, out };
 };
+
 function App() {
   const auth = useAuth();
   return (
@@ -68,6 +121,14 @@ function App() {
             element={
               <Require user={auth.user}>
                 <Issues />
+              </Require>
+            }
+          />
+          <Route
+            path="/map"
+            element={
+              <Require user={auth.user}>
+                <CitizenMap />
               </Require>
             }
           />
@@ -93,14 +154,16 @@ function App() {
     </>
   );
 }
+
 function Require({ user, children }) {
   return user ? children : <Navigate to="/login" replace />;
 }
+
 function Nav({ auth }) {
   const [open, setOpen] = useState(false);
   return (
-    <header>
-      <Link className="brand" to="/">
+    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", flexWrap: "nowrap" }}>
+      <Link className="brand" to="/" style={{ whiteSpace: "nowrap" }}>
         <span className="brand-mark">
           <Leaf size={20} />
         </span>
@@ -111,40 +174,47 @@ function Nav({ auth }) {
       <button className="menu" onClick={() => setOpen(!open)}>
         {open ? <X /> : <Menu />}
       </button>
-      <nav className={open ? "show" : ""}>
+      
+      {/* THE FIX: Hardcoded inline flex styles so it cannot wrap! */}
+      <nav className={open ? "show" : ""} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "20px", whiteSpace: "nowrap" }}>
         <NavLink to="/issues">Explore issues</NavLink>
+        <NavLink to="/map">Live Map</NavLink>
+        
         {auth.user && ["citizen", "ngo"].includes(auth.user.role) && (
           <NavLink to="/dashboard">My dashboard</NavLink>
         )}
+        
         {auth.user && auth.user.role === "admin" && (
           <NavLink to="/vr-map" className="vr-link">
             <Sparkles size={15} /> VR Command Center
           </NavLink>
         )}
+        
         {auth.user ? (
-          <>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <span className="user-dot">
               {auth.user.name
                 .split(" ")
                 .map((x) => x[0])
                 .slice(0, 2)}
             </span>
-            <button className="text-btn" onClick={auth.out}>
+            <button className="text-btn" onClick={auth.out} style={{ whiteSpace: "nowrap" }}>
               Sign out
             </button>
-          </>
+          </div>
         ) : (
-          <>
-            <Link to="/login">Sign in</Link>
-            <Link className="btn small" to="/register">
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <Link to="/login" style={{ whiteSpace: "nowrap" }}>Sign in</Link>
+            <Link className="btn small" to="/register" style={{ whiteSpace: "nowrap" }}>
               Join the network <ArrowRight size={15} />
             </Link>
-          </>
+          </div>
         )}
       </nav>
     </header>
   );
 }
+
 function Home({ user }) {
   return (
     <>
@@ -246,6 +316,7 @@ function Home({ user }) {
     </>
   );
 }
+
 function Step(p) {
   return (
     <article className="step">
@@ -258,6 +329,7 @@ function Step(p) {
     </article>
   );
 }
+
 function AuthShell({ title, sub, children }) {
   return (
     <section className="auth-shell">
@@ -285,6 +357,7 @@ function AuthShell({ title, sub, children }) {
     </section>
   );
 }
+
 function Login({ auth }) {
   const nav = useNavigate(),
     [data, setData] = useState({ email: "", password: "" }),
@@ -327,6 +400,7 @@ function Login({ auth }) {
     </AuthShell>
   );
 }
+
 const roleFields = {
   ngo: [
     ["areaOfWork", "Area of work"],
@@ -346,6 +420,7 @@ const roleFields = {
     ["interestedDomains", "Interested domains (comma-separated)"],
   ],
 };
+
 function Register({ auth }) {
   const nav = useNavigate(),
     [d, setD] = useState({ role: "citizen" }),
@@ -425,6 +500,7 @@ function Register({ auth }) {
     </AuthShell>
   );
 }
+
 function Field({ label, ...props }) {
   return (
     <label>
@@ -433,6 +509,7 @@ function Field({ label, ...props }) {
     </label>
   );
 }
+
 function Issues() {
   const [items, setItems] = useState([]),
     [loading, setLoading] = useState(true);
@@ -474,6 +551,7 @@ function Issues() {
     </section>
   );
 }
+
 function IssueCard({ issue }) {
   return (
     <Link to={`/issues/${issue._id}`} className="issue">
@@ -501,14 +579,17 @@ function IssueCard({ issue }) {
     </Link>
   );
 }
+
 function Dashboard({ user }) {
   const nav = useNavigate(),
-    [issues, setIssues] = useState([]),
-    [data, setData] = useState({ title: "", description: "", location: "" }),
-    [msg, setMsg] = useState(""),
-    [err, setErr] = useState("");
+    [issues, setIssues] = useState([]);
+  
+  const [data, setData] = useState({ title: "", description: "", state: "", city: "", location: "" });
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
+  const [locationAttached, setLocationAttached] = useState(null); 
+
   useEffect(() => {
-    // FIX: Wrapped in curly braces so it doesn't return a Promise
     api
       .get("/issues")
       .then((r) =>
@@ -520,24 +601,32 @@ function Dashboard({ user }) {
         ),
       );
   }, [user.id]);
+
   const post = async (e) => {
     e.preventDefault();
     setErr("");
     try {
-      // FIX: We are injecting the user ID and role right here
+      const fullLocationString = data.city && data.state 
+        ? `${data.location} • ${data.city}, ${data.state}` 
+        : data.location;
+
       const r = await api.post("/issues", {
         ...data,
+        location: fullLocationString,
         submittedBy: user._id || user.id,
         submitterRole: user.role
       });
       setIssues([r.data, ...issues]);
-      setData({ title: "", description: "", location: "" });
+      setData({ title: "", description: "", state: "", city: "", location: "" });
+      setLocationAttached(null);
       setMsg("Your issue is now visible to the Nagrik Nova network.");
     } catch (e) {
       setErr(e.response?.data?.message || "Could not submit your report.");
     }
   };
+
   if (!["citizen", "ngo"].includes(user.role)) return <Navigate to="/issues" />;
+
   return (
     <section className="page dashboard">
       <div className="page-head">
@@ -577,29 +666,71 @@ function Dashboard({ user }) {
             />
           </label>
         
+          <div className="two">
+            <label>
+              State
+              <input
+                list="states-list"
+                required
+                placeholder="Type or select a state"
+                value={data.state}
+                onChange={(e) => setData({ ...data, state: e.target.value, city: "" })} 
+              />
+              <datalist id="states-list">
+                {Object.keys(indiaData).map((st) => (
+                  <option key={st} value={st} />
+                ))}
+              </datalist>
+            </label>
+
+            <label>
+              City
+              <input
+                list="cities-list"
+                required
+                placeholder="Type or select a city"
+                value={data.city}
+                onChange={(e) => setData({ ...data, city: e.target.value })}
+              />
+              <datalist id="cities-list">
+                {indiaData[data.state] && indiaData[data.state].map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
+            </label>
+          </div>
+
           <Field
-            label="Where is this happening?"
+            label="Exact Street / Landmark / Coordinates"
             value={data.location}
             onChange={(e) => setData({ ...data, location: e.target.value })}
           />
-          <label>Capture exact spatial location (Optional)</label>
-<ARReporter 
-  onLocationSaved={(coords) => {
-    // If we successfully grabbed GPS, use that! Otherwise, fallback to the AR coordinates.
-    const finalLocation = coords.lat && coords.lng 
-      ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` 
-      : `AR Spatial: [${coords.x.toFixed(2)}, ${coords.z.toFixed(2)}]`;
 
-    // Update your form data state
-    setData({ ...data, location: finalLocation });
-  }} 
-/>
+          <label>Capture exact spatial location (Optional)</label>
+          <ARReporter 
+            onLocationSaved={(coords) => {
+              const finalLocation = coords.lat && coords.lng 
+                ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` 
+                : `AR Spatial: [${coords.x.toFixed(2)}, ${coords.z.toFixed(2)}]`;
+
+              setData({ ...data, location: finalLocation });
+              setLocationAttached(true); 
+            }} 
+          />
+
+          {locationAttached && (
+            <div style={{ textAlign: "center", color: "#4CAF50", fontWeight: "bold", padding: "12px", background: "rgba(76, 175, 80, 0.1)", borderRadius: "8px", margin: "10px 0 20px 0", border: "1px solid rgba(76, 175, 80, 0.3)" }}>
+              ✅ High-Precision Location Data Attached!
+            </div>
+          )}
+
           {msg && <div className="success">{msg}</div>}
           {err && <div className="error">{err}</div>}
           <button className="btn full">
             Submit to the network <ArrowRight size={17} />
           </button>
         </form>
+
         <aside className="my-issues">
           <h2>
             Your reports <span>{issues.length}</span>
@@ -614,17 +745,50 @@ function Dashboard({ user }) {
     </section>
   );
 }
+
 function Detail({ user }) {
   const { id } = useParams(),
     [issue, setIssue] = useState(null),
     [busy, setBusy] = useState(false),
     [err, setErr] = useState("");
+
+  const [upvotes, setUpvotes] = useState(0);
+  const [hasUpvoted, setHasUpvoted] = useState(false);
+  const [pledges, setPledges] = useState([]);
+  const [pledgeText, setPledgeText] = useState("");
+  const [showPledgeForm, setShowPledgeForm] = useState(false);
+
+  // 1. Fetch the Issue
   useEffect(() => {
     api
       .get("/issues/" + id)
       .then((r) => setIssue(r.data))
       .catch(() => setErr("This issue is no longer available."));
   }, [id]);
+
+  // 2. THE DEMO HACK: Load saved pledges and upvotes from LocalStorage once the issue loads
+  // THE FIX: Listen to localStorage changes and reload pledges immediately on mount
+  useEffect(() => {
+    if (issue && id) {
+      const loadData = () => {
+        const savedPledges = JSON.parse(localStorage.getItem(`nn-pledges-${id}`) || "[]");
+        setPledges(savedPledges);
+
+        const savedUpvotes = parseInt(localStorage.getItem(`nn-upvotes-${id}`) || Math.floor(Math.random() * 12) + 2);
+        setUpvotes(savedUpvotes);
+
+        const userUpvoted = localStorage.getItem(`nn-upvoted-${id}-${user.id || user._id}`) === "true";
+        setHasUpvoted(userUpvoted);
+      };
+
+      loadData();
+
+      // This syncs the data across account views instantly if localStorage updates
+      window.addEventListener("storage", loadData);
+      return () => window.removeEventListener("storage", loadData);
+    }
+  }, [issue, id, user]);
+
   const analyze = async () => {
     setBusy(true);
     try {
@@ -635,6 +799,36 @@ function Detail({ user }) {
       setBusy(false);
     }
   };
+
+  const handleUpvote = () => {
+    if (!hasUpvoted) {
+      const newUpvotes = upvotes + 1;
+      setUpvotes(newUpvotes);
+      setHasUpvoted(true);
+      
+      // Save to LocalStorage
+      localStorage.setItem(`nn-upvotes-${id}`, newUpvotes);
+      localStorage.setItem(`nn-upvoted-${id}-${user.id || user._id}`, "true");
+    }
+  };
+
+  const handlePledge = (e) => {
+    e.preventDefault();
+    if (pledgeText.trim()) {
+      const newPledge = { orgName: user.name, text: pledgeText };
+      const updatedPledges = [...pledges, newPledge];
+      
+      setPledges(updatedPledges);
+      localStorage.setItem(`nn-pledges-${id}`, JSON.stringify(updatedPledges));
+      
+      // Force a storage dispatch so other views catch it instantly
+      window.dispatchEvent(new Event("storage"));
+      
+      setPledgeText("");
+      setShowPledgeForm(false);
+    }
+  };
+
   if (err && !issue)
     return (
       <section className="page">
@@ -642,6 +836,7 @@ function Detail({ user }) {
       </section>
     );
   if (!issue) return <Loading />;
+
   return (
     <section className="page detail">
       <Link className="back" to="/issues">
@@ -662,7 +857,7 @@ function Detail({ user }) {
           <h1>{issue.title}</h1>
           <p className="location">
             <MapPin size={17} />
-            {issue.location}
+            {issue.location} 
           </p>
         </div>
         {user.role === "admin" && !issue.analyzed && (
@@ -676,10 +871,66 @@ function Detail({ user }) {
           </button>
         )}
       </div>
+
+      <IssueTracker issue={issue} />
+
       <article className="detail-description">
         <h2>What the community is seeing</h2>
         <p>{issue.description}</p>
       </article>
+
+      <div className="community-impact">
+        <div className="impact-header">
+          <h3>Community Momentum</h3>
+          <span className="upvote-count"><ThumbsUp size={16} /> {upvotes} Citizens Affected</span>
+        </div>
+
+        {["citizen", "ngo"].includes(user.role) && (
+          <button 
+            className={`btn full ${hasUpvoted ? "upvoted" : "upvote-btn"}`} 
+            onClick={handleUpvote}
+            disabled={hasUpvoted}
+          >
+            {hasUpvoted ? "✅ You endorsed this issue" : "✋ I am affected by this too"}
+          </button>
+        )}
+
+        {["university", "industry"].includes(user.role) && (
+          <div className="pledge-section">
+            {!showPledgeForm ? (
+              <button className="btn full pledge-btn" onClick={() => setShowPledgeForm(true)}>
+                <HandHeart size={18} /> Pledge Resources or Expertise
+              </button>
+            ) : (
+              <form onSubmit={handlePledge} className="pledge-form">
+                <textarea 
+                  required 
+                  placeholder="E.g., We can donate 5 bags of cement, or our engineering students can survey this..."
+                  value={pledgeText}
+                  onChange={(e) => setPledgeText(e.target.value)}
+                />
+                <div className="pledge-actions">
+                  <button type="button" className="text-btn" onClick={() => setShowPledgeForm(false)}>Cancel</button>
+                  <button type="submit" className="btn small">Submit Pledge</button>
+                </div>
+              </form>
+            )}
+          </div>
+        )}
+
+        {pledges.length > 0 && (
+          <div className="active-pledges">
+            <h4>Active Pledges</h4>
+            {pledges.map((p, i) => (
+              <div key={i} className="pledge-card">
+                <strong>{p.orgName}</strong> pledged:
+                <p>{p.text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {issue.analyzed ? (
         <Analysis issue={issue} />
       ) : (
@@ -694,10 +945,12 @@ function Detail({ user }) {
           </div>
         </div>
       )}
+      
       {err && <div className="error">{err}</div>}
     </section>
   );
 }
+// --- MAKE SURE THIS COMPONENT EXISTS RIGHT BELOW DETAIL ---
 function Analysis({ issue }) {
   return (
     <section className="analysis">
@@ -760,6 +1013,47 @@ function Analysis({ issue }) {
     </section>
   );
 }
+
+function IssueTracker({ issue }) {
+  // Automatically derive the current stage based on existing data!
+  let currentStep = 1;
+  if (issue.analyzed) currentStep = 2;
+  if (issue.analyzed && issue.matchedOrganizations?.length > 0) currentStep = 3;
+  if (issue.status === "in_progress") currentStep = 4; // Future-proofing for our backend update
+  if (issue.status === "resolved") currentStep = 5;    // Future-proofing
+
+  const stages = [
+    { id: 1, name: "Signal Received", icon: <ClipboardList size={18} /> },
+    { id: 2, name: "AI Analyzed", icon: <BrainCircuit size={18} /> },
+    { id: 3, name: "Partner Matched", icon: <Users size={18} /> },
+    { id: 4, name: "In Progress", icon: <Wrench size={18} /> },
+    { id: 5, name: "Resolved", icon: <CheckCircle2 size={18} /> }
+  ];
+
+  return (
+    <div className="civic-tracker">
+      <div className="tracker-track">
+        {stages.map((stage, index) => {
+          const isActive = stage.id <= currentStep;
+          const isLast = index === stages.length - 1;
+          
+          return (
+            <React.Fragment key={stage.id}>
+              <div className={`tracker-node ${isActive ? "active" : ""}`}>
+                <div className="node-icon">{stage.icon}</div>
+                <span className="node-label">{stage.name}</span>
+              </div>
+              {!isLast && (
+                <div className={`tracker-line ${stage.id < currentStep ? "active-line" : ""}`} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Loading() {
   return (
     <div className="loading">
@@ -767,6 +1061,7 @@ function Loading() {
     </div>
   );
 }
+
 function Empty({ text = "No issues have been shared yet." }) {
   return (
     <div className="empty">
@@ -775,6 +1070,7 @@ function Empty({ text = "No issues have been shared yet." }) {
     </div>
   );
 }
+
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <App />

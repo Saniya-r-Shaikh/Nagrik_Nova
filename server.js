@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(cors());
 
 // --- DATABASE CONNECTION ---
-mongoose.connect('mongodb://127.0.0.1:27017/nagrik_nova')
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Clean Database Connected!'))
   .catch(err => console.log('❌ DB Error:', err.message));
 

@@ -7,3 +7,226 @@
 .quiet-art{background:linear-gradient(155deg,#edf5dd 0%,#d9ebbe 100%);overflow:hidden}.quiet-art:after{display:none}.quiet-art .sun,.quiet-art .orb,.quiet-art .map-grid{display:none}.art-sun{position:absolute;width:234px;height:234px;top:53px;right:21%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffecaf 0 4%,#f7d67c 52%,#edbd60 100%);box-shadow:0 22px 36px rgba(195,142,44,.18)}.art-ring{position:absolute;border:1px solid rgba(46,112,87,.23);border-radius:50%}.ring-a{width:330px;height:330px;top:9px;right:7%}.ring-b{width:430px;height:430px;top:-43px;right:-5%;border-style:dashed}.art-hill{position:absolute;bottom:-74px;border-radius:50% 50% 0 0;transform:rotate(-5deg)}.hill-back{width:135%;height:210px;right:-25%;background:#d3e6a6}.hill-front{width:115%;height:166px;left:-15%;background:#b9d486}.art-path{position:absolute;z-index:2;bottom:-10px;left:43%;height:265px;width:67px;border-radius:50% 50% 0 0;background:#f8f6df;transform:rotate(26deg);opacity:.85}.art-leaf{position:absolute;z-index:3;width:82px;height:128px;background:#34785f;border-radius:100% 0 100% 0;transform:rotate(25deg);box-shadow:inset -12px -13px 0 rgba(20,77,58,.14)}.leaf-one{left:19%;bottom:74px}.leaf-two{right:15%;bottom:45px;transform:rotate(-28deg) scale(.68);background:#55976e}.art-leaf:after{content:'';position:absolute;width:2px;height:102px;background:#d8eb9a;left:39px;top:13px;transform:rotate(-38deg);transform-origin:bottom}.art-seed{position:absolute;z-index:3;width:13px;height:13px;border-radius:50%;background:#f4be53;box-shadow:0 0 0 7px rgba(244,190,83,.19)}.seed-one{top:67px;left:20%}.seed-two{top:118px;right:18%;transform:scale(.65)}.art-caption{position:absolute;z-index:4;bottom:23px;left:29px;display:flex;gap:7px;align-items:center;color:#2d6e59;font:500 10px 'DM Mono';letter-spacing:.35px;text-transform:uppercase}.art-caption svg{color:#34785f}footer{background:#183e38;color:#eaf0dd;min-height:185px;padding:38px max(5vw,32px);display:grid;grid-template-columns:1.35fr 1fr auto;gap:40px;align-items:start}footer .brand{color:white;font-size:18px}footer .brand-mark{background:#d5eb83;color:#235a4a}footer p{font-size:11px;color:#aec2b4;max-width:230px;line-height:1.7;margin:13px 0}.footer-links{display:flex;gap:48px}.footer-links div{display:grid;gap:9px;font-size:11px;color:#bdd1c1}.footer-links small{font:500 10px 'DM Mono';color:#e1ed97;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}.footer-links a:hover{color:#e1ed97}.footer-note{text-align:right;font-size:10px;line-height:1.8;color:#9eb6a8}@media(max-width:760px){.art-sun{transform:scale(.72);transform-origin:top right;right:10%;top:27px}.ring-a{transform:scale(.7);transform-origin:top right}.ring-b{transform:scale(.65);transform-origin:top right}.art-leaf{transform:scale(.72) rotate(25deg)}.leaf-two{transform:scale(.48) rotate(-28deg)}.art-caption{font-size:8px;left:20px;bottom:17px}footer{grid-template-columns:1fr;padding:34px 23px;gap:25px}.footer-links{gap:40px}.footer-note{text-align:left}}
 .quiet-art{background:radial-gradient(circle at 50% 43%,#f7fbec 0 14%,transparent 14.2%),linear-gradient(145deg,#e8f2d7,#d5ebca);display:block}.quiet-art>*{position:absolute}.constellation-lines{inset:14% 12%;border-radius:50%;background:conic-gradient(from 30deg,transparent 0 18%,rgba(48,116,94,.3) 18.4% 18.7%,transparent 19% 47%,rgba(48,116,94,.3) 47.4% 47.7%,transparent 48% 80%,rgba(48,116,94,.3) 80.4% 80.7%,transparent 81%);mask:radial-gradient(circle,transparent 0 25%,#000 25.4% 26.3%,transparent 26.7%);animation:turn 22s linear infinite}.constellation-lines:after{content:'';position:absolute;inset:8%;border:1px dashed rgba(48,116,94,.25);border-radius:50%}.constellation-core{z-index:3;left:50%;top:48%;transform:translate(-50%,-50%);width:132px;height:132px;border-radius:50%;background:#fffdf7;box-shadow:0 16px 35px rgba(38,91,64,.18),0 0 0 13px rgba(255,255,255,.36);display:grid;place-content:center;text-align:center;gap:6px;color:#2f745e;animation:corePulse 3.6s ease-in-out infinite}.constellation-core svg{margin:auto}.constellation-core span{font:700 10px 'DM Mono';text-transform:uppercase;letter-spacing:.3px}.constellation-node{z-index:4;width:48px;height:48px;border-radius:50%;background:#2f745e;box-shadow:0 0 0 8px rgba(255,255,255,.38);display:grid;place-items:center;animation:nodeFloat 4s ease-in-out infinite}.constellation-node span{width:14px;height:14px;border-radius:50%;background:#d9ec83;box-shadow:0 -10px 0 -3px #d9ec83}.node-a{top:19%;left:18%}.node-b{right:18%;top:28%;background:#286d91;animation-delay:-1.2s}.node-b span{background:#d9edf3;box-shadow:0 -10px 0 -3px #d9edf3}.node-c{bottom:18%;left:26%;background:#e59b4b;animation-delay:-2.1s}.node-c span{background:#fff3cb;box-shadow:0 -10px 0 -3px #fff3cb}.constellation-label{z-index:5;color:#376a58;background:rgba(255,255,250,.8);padding:6px 9px;border-radius:5px;font:600 9px 'DM Mono';text-transform:uppercase;letter-spacing:.25px}.label-a{top:17%;left:31%}.label-b{right:10%;top:43%}.label-c{left:17%;bottom:17%}.constellation-caption{z-index:5;bottom:23px;right:27px;color:#36725d;display:flex;gap:7px;align-items:center;font:500 10px 'DM Mono';text-transform:uppercase;letter-spacing:.2px}@keyframes turn{to{transform:rotate(360deg)}}@keyframes corePulse{50%{transform:translate(-50%,-50%) scale(1.06);box-shadow:0 18px 38px rgba(38,91,64,.2),0 0 0 22px rgba(255,255,255,.2)}}@keyframes nodeFloat{50%{transform:translateY(-10px)}}
 @media(max-width:760px){.constellation-core{transform:translate(-50%,-50%) scale(.72)}.constellation-node{transform:scale(.72)}.node-a{left:13%;top:18%}.node-b{right:11%;top:25%}.node-c{left:18%;bottom:22%}.constellation-label{font-size:7px;padding:5px}.label-a{left:29%;top:17%}.label-b{right:5%;top:42%}.label-c{left:14%;bottom:16%}.constellation-caption{bottom:15px;right:15px;font-size:7px}.constellation-lines{inset:8%}.constellation-core{animation:corePulseMobile 3.6s ease-in-out infinite}@keyframes corePulseMobile{50%{transform:translate(-50%,-50%) scale(.78)}}}
+
+/* --- CIVIC PIZZA TRACKER --- */
+.civic-tracker {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 30px 20px;
+  margin: 30px 0;
+  overflow-x: auto; /* Allows scrolling on small phone screens */
+}
+
+.tracker-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 600px; /* Forces proper spacing */
+}
+
+.tracker-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.4;
+  transition: all 0.3s ease;
+  width: 100px;
+}
+
+.tracker-node.active {
+  opacity: 1;
+}
+
+.node-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #222;
+  border: 2px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}
+
+.tracker-node.active .node-icon {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: #4CAF50;
+  color: #4CAF50;
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.2);
+}
+
+.node-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  /* Changed from #aaa to a dark gray so inactive steps are visible on light backgrounds */
+  color: #777; 
+}
+
+.tracker-node.active .node-label {
+  /* Changed from white to solid black for active steps! */
+  color: #000; 
+}
+
+.tracker-line {
+  flex-grow: 1;
+  height: 3px;
+  background: #333;
+  margin-bottom: 25px; /* Aligns with the circles, offsetting the text below */
+  border-radius: 2px;
+}
+
+.tracker-line.active-line {
+  background: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+}
+/* --- LEAFLET DARK MODE OVERRIDES --- */
+.custom-popup .leaflet-popup-content-wrapper {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+.custom-popup .leaflet-popup-tip {
+  background: #1a1a1a;
+  border: 1px solid #333;
+}
+.custom-popup .leaflet-popup-close-button {
+  color: #aaa !important;
+}
+
+/* --- EMERGENCY NAV BAR FIX --- */
+header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  width: 100%;
+}
+
+header nav {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 25px !important;
+  white-space: nowrap !important; /* This forces the text to stay on one line! */
+}
+
+/* --- HACKATHON DARK MAP MAGIC --- */
+.dark-map-tiles {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+/* --- COMMUNITY IMPACT STYLES --- */
+.community-impact {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid #eee;
+}
+
+.impact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.impact-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.upvote-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+button.upvote-btn {
+  background: #ffffff !important;
+  color: #000000 !important; /* Forces text to be solid black */
+  border: 2px solid #ccc !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+button.upvote-btn:hover {
+  background: #f1f1f1 !important;
+  border-color: #aaa !important;
+}
+
+button.upvoted {
+  background: rgba(76, 175, 80, 0.1) !important;
+  color: #2e7d32 !important; /* Dark, readable green */
+  border: 2px solid #4CAF50 !important;
+  cursor: default !important;
+  font-weight: 600 !important;
+}
+
+button.pledge-btn {
+  background: #111;
+}
+
+.pledge-form textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.pledge-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.active-pledges {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.active-pledges h4 {
+  margin: 0 0 15px 0;
+  font-size: 0.9rem;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pledge-card {
+  background: #f9f9f9;
+  border-left: 4px solid #111;
+  padding: 15px;
+  border-radius: 4px 8px 8px 4px;
+  margin-bottom: 10px;
+}
+
+.pledge-card strong {
+  display: block;
+  color: #111;
+  margin-bottom: 5px;
+}
+
+.pledge-card p {
+  margin: 0;
+  color: #555;
+  font-size: 0.95rem;
+}
