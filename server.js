@@ -266,17 +266,15 @@ app.post('/api/ai/chat', async (req, res) => {
     try {
         const { message } = req.body;
         
-        // 1. Initialize the AI
-        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-        // Using the ultra-fast 3 Flash model we tested
+        // 1. Initialize the AI (Using your existing GEMINI_API_KEY!)
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({
-            model: "gemini-3-flash-preview", 
+            model: "gemini-3.1-flash-lite", // Matching your ultra-fast analysis model
             generationConfig: { responseMimeType: "application/json" }
         });
 
-        // 2. Fetch recent database context (RAG)
-        // Note: Make sure 'Issue' matches the name of your Mongoose model!
-        const dbContext = await Issue.find({ status: { $ne: 'resolved' } }).limit(3); 
+        // 2. Fetch recent database context (THE FIX: Using Ticket instead of Issue)
+        const dbContext = await Ticket.find({ status: { $ne: 'resolved' } }).limit(3); 
         const dbContextString = dbContext.length > 0
             ? JSON.stringify(dbContext.map(i => ({ description: i.description, status: i.status })))
             : "No active local issues found.";
@@ -290,8 +288,9 @@ app.post('/api/ai/chat', async (req, res) => {
         let aiResultData = JSON.parse(aiResponseString);
         
         if (aiResultData.status === 'final_report') {
-            const newIssue = new Issue(aiResultData.dataToSave);
-            await newIssue.save();
+            // THE FIX: Save it using the Ticket model!
+            const newTicket = new Ticket(aiResultData.dataToSave);
+            await newTicket.save();
             aiResultData.message += ` (Report has been submitted to the dashboard!)`;
         }
 
