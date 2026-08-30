@@ -227,44 +227,67 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
 });
 
 // --- AI CHATBOT ROUTE ---
+// --- AI CHATBOT ROUTE ---
 app.post('/api/ai/chat', async (req, res) => {
     try {
         const { message } = req.body;
         
-        // 1. Initialize the AI 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({
             model: "gemini-3.1-flash-lite",
             generationConfig: { responseMimeType: "application/json" }
         });
 
-        // 2. Fetch recent database context using Ticket
         const dbContext = await Ticket.find({ status: { $ne: 'resolved' } }).limit(3); 
         const dbContextString = dbContext.length > 0
             ? JSON.stringify(dbContext.map(i => ({ description: i.description, status: i.status })))
             : "No active local issues found.";
 
-        // 3. Generate the response
-        const prompt = `User Message: "${message}"\n\n[DATABASE CONTEXT]: ${dbContextString}`;
-        const result = await model.generateContent(prompt);
-        const aiResponseString = result.response.text();
+        // THE FIX: Injecting the system instructions and exact JSON schema directly into the backend prompt
+        const prompt = `
+        You are Nova, the official Civic AI Agent for Talegaon Dabhade. 
+        Help citizens report infrastructure issues conversationally.
         
-        // 4. Parse the JSON and potentially save to DB
+        You must extract: description, category (e.g., Infrastructure, Road Safety), location, and severity (1 to 3).
+        
+        CRITICAL INSTRUCTION: You MUST respond ONLY with a raw JSON object using exactly these keys. Do not include markdown:
+        {
+          "message": "Your conversational reply asking the user for missing details, or thanking them if the report is complete.",
+          "dataToSave": {
+            "description": "extracted string or empty",
+            "category": "extracted string or empty",
+            "location": "extracted string or empty",
+            "severity": 1
+          },
+          "status": "processing or final_report"
+        }
+        
+        User Message: "${message}"
+        [DATABASE CONTEXT]: ${dbContextString}
+        `;
+
+        const result = await model.generateContent(prompt);
+        let aiResponseString = result.response.text();
+        
+        // Clean up markdown in case the model forgets the rule
+        aiResponseString = aiResponseString.replace(/```json/g, '').replace(/```/g, '').trim();
         let aiResultData = JSON.parse(aiResponseString);
         
         if (aiResultData.status === 'final_report') {
             const newTicket = new Ticket(aiResultData.dataToSave);
             await newTicket.save();
-            aiResultData.message += ` (Report has been submitted to the dashboard!)`;
+            aiResultData.message += ` (Report has been automatically submitted to the dashboard!)`;
         }
 
-        res.json({ message: aiResultData.message });
+        // Failsafe: if the AI uses the wrong key name, we still catch the text
+        const finalMessage = aiResultData.message || aiResultData.response || aiResultData.text || "I understood, but my response got a bit jumbled. Could you clarify?";
+
+        res.json({ message: finalMessage });
 
     } catch (error) {
         console.error("AI Error:", error);
         res.status(500).json({ error: "Failed to process AI request." });
     }
 });
-
 // --- START SERVER ---
 app.listen(5000, () => console.log('Server live on port 5000'));
