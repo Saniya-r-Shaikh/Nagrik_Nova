@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -260,6 +261,46 @@ const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
     console.error("CRASH IN AI ANALYZE:", error);
     res.status(500).json({ message: 'AI Analysis failed' });
   }
+});
+app.post('/api/ai/chat', async (req, res) => {
+    try {
+        const { message } = req.body;
+        
+        // 1. Initialize the AI
+        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+        // Using the ultra-fast 3 Flash model we tested
+        const model = genAI.getGenerativeModel({
+            model: "gemini-3-flash-preview", 
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        // 2. Fetch recent database context (RAG)
+        // Note: Make sure 'Issue' matches the name of your Mongoose model!
+        const dbContext = await Issue.find({ status: { $ne: 'resolved' } }).limit(3); 
+        const dbContextString = dbContext.length > 0
+            ? JSON.stringify(dbContext.map(i => ({ description: i.description, status: i.status })))
+            : "No active local issues found.";
+
+        // 3. Generate the response
+        const prompt = `User Message: "${message}"\n\n[DATABASE CONTEXT]: ${dbContextString}`;
+        const result = await model.generateContent(prompt);
+        const aiResponseString = result.response.text();
+        
+        // 4. Parse the JSON and potentially save to DB
+        let aiResultData = JSON.parse(aiResponseString);
+        
+        if (aiResultData.status === 'final_report') {
+            const newIssue = new Issue(aiResultData.dataToSave);
+            await newIssue.save();
+            aiResultData.message += ` (Report has been submitted to the dashboard!)`;
+        }
+
+        res.json({ message: aiResultData.message });
+
+    } catch (error) {
+        console.error("AI Error:", error);
+        res.status(500).json({ error: "Failed to process AI request." });
+    }
 });
 // --- START SERVER ---
 app.listen(5000, () => console.log('Server live on port 5000'));
