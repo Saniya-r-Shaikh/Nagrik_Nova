@@ -9,7 +9,7 @@ export default function CitizenMap() {
   const [issues, setIssues] = useState([]);
 
   useEffect(() => {
-    axios.get(`[https://nagrik-nova.onrender.com/api/issues](https://nagrik-nova.onrender.com/api/issues)`)
+    axios.get('https://nagrik-nova.onrender.com/api/issues')
       .then((r) => setIssues(r.data))
       .catch((err) => console.error("Failed to fetch map issues:", err));
   }, []);
@@ -55,7 +55,7 @@ export default function CitizenMap() {
           className="dark-map-tiles"
         />
         
-        {issues.map(issue => {
+        {issues?.map(issue => {
           // THE FIX: Safely fallback to a string if issue.location is missing
           const safeLocation = issue.location || "Location not specified";
           const coords = getCoords(safeLocation);
