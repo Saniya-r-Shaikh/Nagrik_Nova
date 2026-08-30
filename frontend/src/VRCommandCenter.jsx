@@ -96,7 +96,7 @@ export default function VRCommandCenter() {
   const [issues, setIssues] = useState([]);
 
   useEffect(() => {
-    axios.get(`http://${window.location.hostname}:5000/api/issues`)
+    axios.get(`https://nagrik-nova.onrender.com/api/issues`)
       .then((r) => setIssues(r.data))
       .catch((err) => console.error("Failed to fetch VR issues:", err));
   }, []);
