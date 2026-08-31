@@ -173,7 +173,9 @@ function Require({ user, children }) {
 function Nav({ auth }) {
   const [open, setOpen] = useState(false);
   
-  // --- COLORBLIND MODE STATE ---
+  // A quick helper function to close the menu
+  const closeMenu = () => setOpen(false);
+  
   const [colorblind, setColorblind] = useState(() => 
     localStorage.getItem("nn-colorblind") === "true"
   );
@@ -186,11 +188,10 @@ function Nav({ auth }) {
     }
     localStorage.setItem("nn-colorblind", colorblind);
   }, [colorblind]);
-  // -----------------------------
 
   return (
-    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", flexWrap: "nowrap" }}>
-      <Link className="brand" to="/" style={{ whiteSpace: "nowrap" }}>
+    <header>
+      <Link className="brand" to="/" onClick={closeMenu}>
         <span className="brand-mark">
           <Leaf size={20} />
         </span>
@@ -202,47 +203,49 @@ function Nav({ auth }) {
         {open ? <X /> : <Menu />}
       </button>
       
-      <nav className={open ? "show" : ""} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "20px", whiteSpace: "nowrap" }}>
-        <NavLink to="/issues">Explore issues</NavLink>
-        <NavLink to="/map">Live Map</NavLink>
+      <nav className={open ? "show" : ""}>
+        {/* Added closeMenu to ALL links below */}
+        <NavLink to="/issues" onClick={closeMenu}>Explore issues</NavLink>
+        <NavLink to="/map" onClick={closeMenu}>Live Map</NavLink>
         
         {auth.user && ["citizen", "ngo"].includes(auth.user.role) && (
           <>
-            <NavLink to="/dashboard">My dashboard</NavLink>
-            <NavLink to="/rewards">Rewards Store</NavLink>
+            <NavLink to="/dashboard" onClick={closeMenu}>My dashboard</NavLink>
+            <NavLink to="/rewards" onClick={closeMenu}>Rewards Store</NavLink>
           </>
         )}
         
         {auth.user && auth.user.role === "admin" && (
-          <NavLink to="/vr-map" className="vr-link">
+          <NavLink to="/vr-map" className="vr-link" onClick={closeMenu}>
             <Sparkles size={15} /> VR Command Center
           </NavLink>
         )}
         
-        {/* --- ACCESSIBILITY TOGGLE --- */}
         <button 
           className="text-btn" 
-          onClick={() => setColorblind(!colorblind)} 
+          onClick={() => {
+            setColorblind(!colorblind);
+            closeMenu();
+          }} 
           title={colorblind ? "Disable Colorblind Mode" : "Enable Colorblind Mode"}
           style={{ display: "flex", alignItems: "center", gap: "5px" }}
         >
           <Eye size={18} /> {colorblind ? "Standard Mode" : "Accessible View"}
         </button>
-        {/* ---------------------------- */}
 
         {auth.user ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+          <div className="nav-user" style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <span className="user-dot">
               {auth.user.name.split(" ").map((x) => x[0]).slice(0, 2)}
             </span>
-            <button className="text-btn" onClick={auth.out} style={{ whiteSpace: "nowrap" }}>
+            <button className="text-btn" onClick={() => { auth.out(); closeMenu(); }}>
               Sign out
             </button>
           </div>
         ) : (
-          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            <Link to="/login" style={{ whiteSpace: "nowrap" }}>Sign in</Link>
-            <Link className="btn small" to="/register" style={{ whiteSpace: "nowrap" }}>
+          <div className="nav-auth" style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <Link to="/login" onClick={closeMenu}>Sign in</Link>
+            <Link className="btn small" to="/register" onClick={closeMenu}>
               Join the network <ArrowRight size={15} />
             </Link>
           </div>
