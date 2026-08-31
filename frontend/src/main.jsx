@@ -435,18 +435,26 @@ const roleFields = {
 
 function Register({ auth }) {
   const nav = useNavigate(),
-    [d, setD] = useState({ role: "citizen" }),
+    // THE FIX: Grab the ?ref= ID from the browser URL automatically
+    [d, setD] = useState({ 
+      role: "citizen", 
+      referredBy: new URLSearchParams(window.location.search).get('ref') || "" 
+    }),
     [err, setErr] = useState("");
+    
   const set = (k, v) => setD({ ...d, [k]: v });
+  
   const submit = async (e) => {
     e.preventDefault();
     try {
+      // It will now send `referredBy` to the backend!
       auth.signIn((await api.post("/auth/register", d)).data);
       nav("/issues");
     } catch (e) {
       setErr(e.response?.data?.message || "Could not create account.");
     }
   };
+  // ... (rest of the component stays exactly the same)
   return (
     <AuthShell
       title="Join Nagrik Nova"
@@ -749,6 +757,26 @@ function Dashboard({ user }) {
 
         <aside className="my-issues">
           <h2>
+           <div style={{ padding: '20px', background: '#fef3c7', borderRadius: '12px', marginBottom: '25px', border: '1px solid #fde68a' }}>
+            <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#92400e', fontSize: '18px' }}>
+              <Sparkles size={18} color="#d97706" /> Earn 50 Coins!
+            </h3>
+            <p style={{ fontSize: '14px', color: '#92400e', marginBottom: '15px', lineHeight: '1.4' }}>
+              Invite friends to Nagrik Nova. You get 50 coins for every successful sign-up!
+            </p>
+            <button 
+              onClick={() => {
+                const link = `${window.location.origin}/register?ref=${user.id || user._id}`;
+                navigator.clipboard.writeText(link);
+                alert("Referral link copied! Send it to your friends.");
+              }} 
+              className="btn small full" 
+              style={{ backgroundColor: '#d97706', color: 'white', border: 'none', justifyContent: 'center' }}
+            >
+              Copy Referral Link
+            </button>
+          </div>
+          {/* ------------------------------------ */}
             Your reports <span>{issues.length}</span>
           </h2>
           {issues.length ? (

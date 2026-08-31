@@ -38,12 +38,25 @@ const Message = mongoose.model('Message', new mongoose.Schema({ senderId: String
 // --- ESSENTIAL APIs ---
 
 // Users & Auth 
+// Users & Auth (Basic Login)
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { email, password, role, name } = req.body; 
+    // THE FIX: Catch the referredBy ID from the frontend
+    const { email, password, role, name, referredBy } = req.body; 
     console.log("REGISTER ATTEMPT:", email); 
 
     const user = await new User({ username: email, password, role }).save();
+    
+    // --- REFERRAL COIN BONUS LOGIC ---
+    if (referredBy) {
+      try {
+        await User.findByIdAndUpdate(referredBy, { $inc: { coins: 50 } });
+        console.log(`🎁 Referral Bonus! Awarded 50 coins to user ${referredBy}`);
+      } catch (err) {
+        console.log("Invalid referral ID, skipping bonus.");
+      }
+    }
+    // ---------------------------------
     
     res.json({ 
       message: 'User created successfully',
