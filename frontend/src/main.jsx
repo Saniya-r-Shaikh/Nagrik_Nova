@@ -784,8 +784,8 @@ function Dashboard({ user }) {
         </form>
 
         <aside className="my-issues">
-          <h2>
-           <div style={{ padding: '20px', background: '#fef3c7', borderRadius: '12px', marginBottom: '25px', border: '1px solid #fde68a' }}>
+          {/* THE FIX: The Referral Box is now OUTSIDE the h2 tag */}
+          <div style={{ padding: '20px', background: '#fef3c7', borderRadius: '12px', marginBottom: '25px', border: '1px solid #fde68a' }}>
             <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#92400e', fontSize: '18px' }}>
               <Sparkles size={18} color="#d97706" /> Earn 50 Coins!
             </h3>
@@ -805,8 +805,11 @@ function Dashboard({ user }) {
             </button>
           </div>
           {/* ------------------------------------ */}
+          
+          <h2>
             Your reports <span>{issues.length}</span>
           </h2>
+          
           {issues.length ? (
             issues.map((i) => <IssueCard key={i._id} issue={i} />)
           ) : (
