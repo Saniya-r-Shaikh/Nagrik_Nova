@@ -656,7 +656,7 @@ function Dashboard({ user }) {
         </div>
       </div>
       <div className="dash-grid">
-        <form className="report-form" onSubmit={post}>
+        <form className="report-form" onSubmit={post} style={{ alignSelf: "start", display: "flex", flexDirection: "column", gap: "20px" }}>
           <h2>Report a civic issue</h2>
           <p>
             Be specific. Your details help partners understand where action is
