@@ -293,13 +293,14 @@ button.menu {
   }
 
   /* --- FIX: PREMIUM MOBILE MENU ALIGNMENT --- */
+  /* --- FIX: PREMIUM MOBILE MENU OVERLAY --- */
   header {
     flex-wrap: wrap !important; 
     padding: 15px !important;
-    background: white; 
+    background: white !important; 
     position: sticky;
     top: 0;
-    z-index: 1000; /* Keeps menu above the map */
+    z-index: 99999 !important; /* Ultra-high z-index defeats the map controls */
     border-bottom: 1px solid #eaeaea;
   }
   
@@ -314,12 +315,18 @@ button.menu {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 10px !important;
-    /* Added horizontal padding so links don't hug the edge */
-    padding: 20px 15px !important; 
+    padding: 20px 15px 30px 15px !important; 
     white-space: normal !important;
-    border-top: 1px solid #eaeaea;
-    margin-top: 15px;
     box-sizing: border-box;
+
+    /* THE MAGIC FIX: Make it float over the map instead of pushing it down */
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    background: white !important;
+    box-shadow: 0px 15px 20px rgba(0,0,0,0.15) !important;
+    margin-top: 0 !important;
+    border-bottom: 1px solid #eaeaea;
   }
   
   header nav.show {
