@@ -343,19 +343,22 @@ button.menu {
   }
 
   /* Fixed Avatar and Sign Out alignment */
+  /* --- FIX: AVATAR & SIGN OUT ALIGNMENT --- */
   .nav-user {
+    display: flex !important;
     flex-direction: row !important; 
     align-items: center !important;
     justify-content: flex-start !important;
-    padding-left: 10px !important;
+    gap: 15px !important; /* Keeps the text right next to the dot */
+    padding: 10px 10px !important;
     width: 100%;
-  }
-  
-  .btn {
-    width: 100% !important; 
-    justify-content: center !important;
-    padding: 15px !important;
     box-sizing: border-box;
+  }
+
+  .nav-user button.text-btn {
+    width: auto !important; /* Stops the button from stretching and centering */
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* --- FIX: DASHBOARD & ALIGNMENT --- */
@@ -421,5 +424,24 @@ button.menu {
     padding: 10px !important; 
     box-sizing: border-box !important;
     overflow-x: hidden !important; 
+  }
+
+  /* --- FIX: DASHBOARD CARDS TOUCHING SCREEN EDGES --- */
+  .page {
+    padding: 25px 15px !important;
+    box-sizing: border-box !important;
+    width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  .dash-grid {
+    padding: 0 !important; 
+    width: 100% !important;
+  }
+
+  /* Forces all cards to respect the padding of the page */
+  .issue-card, .my-issues div, .dashboard main div {
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
