@@ -31,10 +31,10 @@ import {
   Sparkles,
   Users,
   X,
-  Wrench,          // <-- ADD THIS
+  Wrench,          
   ClipboardList,
-  ThumbsUp,       // <-- ADD THIS
-  HandHeart       // <-- ADD THIS   // <-- ADD THIS
+  ThumbsUp,       
+  HandHeart       
 } from "lucide-react";
 import "./styles.css";
 import Footer from "./Footer";
@@ -98,7 +98,6 @@ const useAuth = () => {
   };
   
   const out = () => {
-    // THE FIX: Target exactly what to delete instead of wiping the whole storage!
     localStorage.removeItem("nn-token");
     localStorage.removeItem("nn-user");
     setUser(null);
@@ -161,7 +160,7 @@ function App() {
         </Routes>
       </main>
       <Footer />
-      <AIChatWidget /> {/* <-- ADDED RIGHT HERE! */}
+      <AIChatWidget /> 
     </>
   );
 }
@@ -186,14 +185,10 @@ function Nav({ auth }) {
         {open ? <X /> : <Menu />}
       </button>
       
-      {/* THE FIX: Hardcoded inline flex styles so it cannot wrap! */}
       <nav className={open ? "show" : ""} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "20px", whiteSpace: "nowrap" }}>
         <NavLink to="/issues">Explore issues</NavLink>
         <NavLink to="/map">Live Map</NavLink>
         
-        {auth.user && ["citizen", "ngo"].includes(auth.user.role) && (
-          <NavLink to="/dashboard">My dashboard</NavLink>
-        )}
         {auth.user && ["citizen", "ngo"].includes(auth.user.role) && (
           <>
             <NavLink to="/dashboard">My dashboard</NavLink>
@@ -775,7 +770,6 @@ function Detail({ user }) {
   const [pledgeText, setPledgeText] = useState("");
   const [showPledgeForm, setShowPledgeForm] = useState(false);
 
-  // 1. Fetch the Issue
   useEffect(() => {
     api
       .get("/issues/" + id)
@@ -783,8 +777,6 @@ function Detail({ user }) {
       .catch(() => setErr("This issue is no longer available."));
   }, [id]);
 
-  // 2. THE DEMO HACK: Load saved pledges and upvotes from LocalStorage once the issue loads
-  // THE FIX: Listen to localStorage changes and reload pledges immediately on mount
   useEffect(() => {
     if (issue && id) {
       const loadData = () => {
@@ -800,7 +792,6 @@ function Detail({ user }) {
 
       loadData();
 
-      // This syncs the data across account views instantly if localStorage updates
       window.addEventListener("storage", loadData);
       return () => window.removeEventListener("storage", loadData);
     }
@@ -823,7 +814,6 @@ function Detail({ user }) {
       setUpvotes(newUpvotes);
       setHasUpvoted(true);
       
-      // Save to LocalStorage
       localStorage.setItem(`nn-upvotes-${id}`, newUpvotes);
       localStorage.setItem(`nn-upvoted-${id}-${user.id || user._id}`, "true");
     }
@@ -838,7 +828,6 @@ function Detail({ user }) {
       setPledges(updatedPledges);
       localStorage.setItem(`nn-pledges-${id}`, JSON.stringify(updatedPledges));
       
-      // Force a storage dispatch so other views catch it instantly
       window.dispatchEvent(new Event("storage"));
       
       setPledgeText("");
@@ -967,7 +956,7 @@ function Detail({ user }) {
     </section>
   );
 }
-// --- MAKE SURE THIS COMPONENT EXISTS RIGHT BELOW DETAIL ---
+
 function Analysis({ issue }) {
   return (
     <section className="analysis">
@@ -1032,12 +1021,11 @@ function Analysis({ issue }) {
 }
 
 function IssueTracker({ issue }) {
-  // Automatically derive the current stage based on existing data!
   let currentStep = 1;
   if (issue.analyzed) currentStep = 2;
   if (issue.analyzed && issue.matchedOrganizations?.length > 0) currentStep = 3;
-  if (issue.status === "in_progress") currentStep = 4; // Future-proofing for our backend update
-  if (issue.status === "resolved") currentStep = 5;    // Future-proofing
+  if (issue.status === "in_progress") currentStep = 4; 
+  if (issue.status === "resolved") currentStep = 5; 
 
   const stages = [
     { id: 1, name: "Signal Received", icon: <ClipboardList size={18} /> },
