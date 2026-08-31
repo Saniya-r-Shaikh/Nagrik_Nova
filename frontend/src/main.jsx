@@ -121,8 +121,7 @@ function App() {
             path="/issues"
             element={
               <Require user={auth.user}>
-                <Issues user={auth.user} />
-                <Issues />
+                <Issues user={auth.user} /> 
               </Require>
             }
           />
@@ -523,7 +522,7 @@ function Field({ label, ...props }) {
   );
 }
 
-function Issues({ user }) { // <-- ADD user HERE
+function Issues({ user }) { 
   const [items, setItems] = useState([]),
     [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -548,7 +547,6 @@ function Issues({ user }) { // <-- ADD user HERE
           </p>
         </div>
         
-        {/* THE FIX: Only show this button if the user is NOT an admin */}
         {user?.role !== "admin" && (
           <Link className="btn" to="/dashboard">
             <Plus size={17} /> Report an issue
