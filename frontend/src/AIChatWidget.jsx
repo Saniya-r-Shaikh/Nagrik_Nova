@@ -19,9 +19,12 @@ export default function AIChatWidget() {
     setLoading(true);
 
     try {
+      const userStr = localStorage.getItem('user');
+      const userObj = userStr ? JSON.parse(userStr) : null;
       const response = await axios.post('https://nagrik-nova.onrender.com/api/ai/chat', {
         message: userMessage,
-        history: messages
+        history: messages,
+        userId: userObj ? userObj.id : null
       });
       setMessages((prev) => [...prev, { role: 'agent', text: response.data.message }]);
     } catch (error) {

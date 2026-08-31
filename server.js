@@ -37,7 +37,7 @@ const Message = mongoose.model('Message', new mongoose.Schema({ senderId: String
 
 // --- ESSENTIAL APIs ---
 
-// Users & Auth (Basic Login)
+// Users & Auth 
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password, role, name } = req.body; 
@@ -87,6 +87,16 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (error) {
     console.error("CRASH IN LOGIN:", error); 
     res.status(500).json({ message: 'Server crash during login' });
+  }
+});
+
+// Fetch user details (for the wallet balance)
+app.get('/api/users/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching user' });
   }
 });
 
@@ -161,7 +171,7 @@ app.get('/sensor-data', async (req, res) => res.json(await SensorData.find()));
 app.post('/messages', async (req, res) => res.json(await new Message(req.body).save()));
 app.get('/messages', async (req, res) => res.json(await Message.find()));
 
-// --- AI ANALYSIS ROUTE ---
+// --- AI ANALYSIS ROUTE (Dashboard button) ---
 app.post('/api/issues/:id/analyze', async (req, res) => {
   try {
     const { id } = req.params;
@@ -172,8 +182,6 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
     }
 
     console.log(`[AI AGENT] Asking Gemini to analyze: ${ticket.title}...`);
-    console.log("🔑 API KEY STATUS:", process.env.GEMINI_API_KEY ? "LOADED" : "MISSING");
-
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
 
@@ -193,24 +201,13 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
     `;
 
     const result = await model.generateContent(prompt);
-    
     let responseText = result.response.text();
     responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    console.log("RAW AI RESPONSE:", responseText); 
-    
     const aiData = JSON.parse(responseText);
 
     ticket.analyzed = true;
     ticket.domain = aiData.domain;
     ticket.priority = aiData.priority;
-    // Determine the coin reward based on the AI's priority assessment
-
-
-// Find the user who submitted the ticket and add the coins to their wallet
-await User.findByIdAndUpdate(ticket.submittedBy, {
-    $inc: { coins: coinReward }
-});
     ticket.requiredExpertise = aiData.requiredExpertise;
     ticket.solutionIdea = aiData.solutionIdea;
     
@@ -222,24 +219,20 @@ await User.findByIdAndUpdate(ticket.submittedBy, {
         expertise: aiData.requiredExpertise 
       }
     ];
+
     // --- COIN REWARD LOGIC ---
-    let coinReward = 10; // Default for low priority
+    let coinReward = 10; 
     if (aiData.priority === "High") coinReward = 50;
     else if (aiData.priority === "Medium") coinReward = 30;
 
-    // Add coins to the user who submitted the ticket
     if (ticket.submittedBy) {
       await User.findByIdAndUpdate(ticket.submittedBy, {
         $inc: { coins: coinReward }
       });
-      console.log(`🪙 Awarded ${coinReward} coins to user ${ticket.submittedBy}`);
+      console.log(`🪙 Dashboard Analysis: Awarded ${coinReward} coins to user ${ticket.submittedBy}`);
     }
-    // -------------------------
-
-    
 
     await ticket.save();
-    console.log("[AI AGENT] Analysis complete! Sending to frontend.");
     res.json(ticket);
 
   } catch (error) {
@@ -248,13 +241,11 @@ await User.findByIdAndUpdate(ticket.submittedBy, {
   }
 });
 
-// --- AI CHATBOT ROUTE ---
-// --- AI CHATBOT ROUTE ---
-// --- AI CHATBOT ROUTE ---
+// --- AI CHATBOT ROUTE (Nova Chat Widget) ---
 app.post('/api/ai/chat', async (req, res) => {
     try {
-        // THE FIX: Catch the history array from React
-        const { message, history } = req.body;
+        // We now need the userId from the frontend to know who gets the coins!
+        const { message, history, userId } = req.body; 
         
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({
@@ -267,7 +258,6 @@ app.post('/api/ai/chat', async (req, res) => {
             ? JSON.stringify(dbContext.map(i => ({ description: i.description, status: i.status })))
             : "No active local issues found.";
 
-        // THE FIX: Convert the history array into a readable script for the AI
         const historyTranscript = history && history.length > 0
             ? history.map(m => `${m.role === 'user' ? 'Citizen' : 'Nova'}: ${m.text}`).join('\n')
             : "No previous conversation.";
@@ -295,7 +285,8 @@ app.post('/api/ai/chat', async (req, res) => {
             "description": "extracted string or empty",
             "category": "extracted string or empty",
             "location": "extracted string or empty",
-            "severity": 1
+            "severity": 1,
+            "title": "A short 4-word title for the issue" 
           },
           "status": "processing or final_report"
         }
@@ -307,14 +298,34 @@ app.post('/api/ai/chat', async (req, res) => {
         aiResponseString = aiResponseString.replace(/```json/g, '').replace(/```/g, '').trim();
         let aiResultData = JSON.parse(aiResponseString);
         
-        // Failsafe to prevent MongoDB crashes if data is missing
         if (aiResultData.status === 'final_report') {
             if (aiResultData.dataToSave.description && aiResultData.dataToSave.location) {
-                const newTicket = new Ticket(aiResultData.dataToSave);
+                
+                // Add the user ID to the ticket so they own it
+                const ticketData = {
+                  ...aiResultData.dataToSave,
+                  submittedBy: userId || 'anonymous' // Fallback if they aren't logged in
+                };
+
+                const newTicket = new Ticket(ticketData);
                 await newTicket.save();
-                aiResultData.message += ` (Report has been automatically submitted to the dashboard!)`;
+                
+                // --- THE FIX: COIN REWARD LOGIC FOR CHATBOT ---
+                if (userId) {
+                    let coinReward = 10; 
+                    if (aiResultData.dataToSave.severity === 3) coinReward = 50;
+                    else if (aiResultData.dataToSave.severity === 2) coinReward = 30;
+
+                    await User.findByIdAndUpdate(userId, {
+                        $inc: { coins: coinReward }
+                    });
+                    console.log(`🪙 Chatbot: Awarded ${coinReward} coins to user ${userId}`);
+                    aiResultData.message += ` (Report submitted! You just earned ${coinReward} Nova Coins!)`;
+                } else {
+                    aiResultData.message += ` (Report submitted! Login next time to earn Nova Coins.)`;
+                }
+                
             } else {
-                // If it tries to save too early, force it to keep asking
                 aiResultData.status = 'processing';
                 aiResultData.message = "I almost have everything, but I just need to confirm the exact location and description before I save this. Could you clarify?";
             }
