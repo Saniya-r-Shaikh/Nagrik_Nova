@@ -34,7 +34,8 @@ import {
   Wrench,          
   ClipboardList,
   ThumbsUp,       
-  HandHeart       
+  HandHeart,
+  Eye      
 } from "lucide-react";
 import "./styles.css";
 import Footer from "./Footer";
@@ -171,6 +172,22 @@ function Require({ user, children }) {
 
 function Nav({ auth }) {
   const [open, setOpen] = useState(false);
+  
+  // --- COLORBLIND MODE STATE ---
+  const [colorblind, setColorblind] = useState(() => 
+    localStorage.getItem("nn-colorblind") === "true"
+  );
+
+  useEffect(() => {
+    if (colorblind) {
+      document.body.classList.add("colorblind-mode");
+    } else {
+      document.body.classList.remove("colorblind-mode");
+    }
+    localStorage.setItem("nn-colorblind", colorblind);
+  }, [colorblind]);
+  // -----------------------------
+
   return (
     <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", flexWrap: "nowrap" }}>
       <Link className="brand" to="/" style={{ whiteSpace: "nowrap" }}>
@@ -202,13 +219,21 @@ function Nav({ auth }) {
           </NavLink>
         )}
         
+        {/* --- ACCESSIBILITY TOGGLE --- */}
+        <button 
+          className="text-btn" 
+          onClick={() => setColorblind(!colorblind)} 
+          title={colorblind ? "Disable Colorblind Mode" : "Enable Colorblind Mode"}
+          style={{ display: "flex", alignItems: "center", gap: "5px" }}
+        >
+          <Eye size={18} /> {colorblind ? "Standard Mode" : "Accessible View"}
+        </button>
+        {/* ---------------------------- */}
+
         {auth.user ? (
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <span className="user-dot">
-              {auth.user.name
-                .split(" ")
-                .map((x) => x[0])
-                .slice(0, 2)}
+              {auth.user.name.split(" ").map((x) => x[0]).slice(0, 2)}
             </span>
             <button className="text-btn" onClick={auth.out} style={{ whiteSpace: "nowrap" }}>
               Sign out

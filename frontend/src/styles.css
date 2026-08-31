@@ -230,3 +230,32 @@ button.pledge-btn {
   color: #555;
   font-size: 0.95rem;
 }
+/* --- COLORBLIND & HIGH CONTRAST MODE --- */
+body.colorblind-mode {
+  /* Shifts greens to distinct accessible blues, and reds to high-vis oranges */
+  filter: contrast(1.15);
+}
+
+body.colorblind-mode .icon-box.green,
+body.colorblind-mode .btn,
+body.colorblind-mode .tracker-node.active .node-icon,
+body.colorblind-mode .tracker-line.active-line {
+  background-color: #2563eb !important; /* High-vis Blue */
+  color: white !important;
+}
+
+body.colorblind-mode .brand-mark,
+body.colorblind-mode .eyebrow,
+body.colorblind-mode .priority.high {
+  color: #d97706 !important; /* Distinct Orange */
+}
+
+body.colorblind-mode .priority.high {
+  background-color: #fef3c7 !important;
+}
+
+body.colorblind-mode a, 
+body.colorblind-mode .link-action {
+  text-decoration: underline !important; /* Helps identify links without relying on color */
+  text-underline-offset: 4px;
+}
