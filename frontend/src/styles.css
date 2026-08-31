@@ -464,4 +464,29 @@ button.menu {
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
+
+  /* --- FIX: DASHBOARD FORM RIGHT-SIDE OVERFLOW --- */
+  
+  /* 1. Stop the grid from pulling outward */
+  .dash-grid {
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 2. Lock the white form box so it respects the page padding */
+  .dash-grid aside, .report-form {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 !important; /* Kills any rogue margins pulling it right */
+  }
+
+  /* 3. Stop text inputs from secretly stretching the box */
+  .report-form input, .report-form textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important; /* This stops flex-box stretching on phones */
+  }
 }
