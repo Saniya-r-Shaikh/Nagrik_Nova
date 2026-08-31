@@ -100,6 +100,27 @@ app.get('/api/users/:id', async (req, res) => {
   }
 });
 
+// --- REDEEM COINS ROUTE ---
+app.post('/api/users/:id/redeem', async (req, res) => {
+  try {
+    const { cost } = req.body;
+    const user = await User.findById(req.params.id);
+    
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.coins < cost) return res.status(400).json({ message: 'Not enough coins' });
+    
+    // Deduct the coins and save to the database permanently
+    user.coins -= cost;
+    await user.save();
+    
+    console.log(`🛍️ User ${user.username} spent ${cost} coins. Remaining balance: ${user.coins}`);
+    res.json({ coins: user.coins });
+  } catch (error) {
+    console.error("CRASH IN REDEEM:", error);
+    res.status(500).json({ message: 'Error processing redemption' });
+  }
+});
+
 // Complaints / Tickets
 app.post('/complaints', async (req, res) => {
   const count = await Ticket.countDocuments();

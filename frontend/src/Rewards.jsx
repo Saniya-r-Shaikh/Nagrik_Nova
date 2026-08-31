@@ -15,22 +15,31 @@ const mockProducts = [
 export default function Rewards({ user }) {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
+  const userId = user?.id || user?._id;
 
-  // Fetch the latest coin balance from the database
+  // Fetch the latest official coin balance from the database
   useEffect(() => {
-    if (user?.id) {
-      api.get(`/users/${user.id}`)
+    if (userId) {
+      api.get(`/users/${userId}`)
         .then(res => setBalance(res.data.coins || 0))
         .catch(err => console.error("Could not fetch wallet", err))
         .finally(() => setLoading(false));
     }
-  }, [user]);
+  }, [userId]);
 
-  const handleRedeem = (item) => {
+  const handleRedeem = async (item) => {
     if (balance >= item.price) {
-      // Deduct locally just for the demo illusion!
-      setBalance(balance - item.price);
-      alert(`🎉 Success! Your ${item.name} has been redeemed.\n\nEstimated delivery: 3-5 business days to your registered address.`);
+      try {
+        // THE FIX: Send the transaction to the database so it is permanent!
+        const res = await api.post(`/users/${userId}/redeem`, { cost: item.price });
+        
+        // Update the UI with the official new balance from the server
+        setBalance(res.data.coins);
+        alert(`🎉 Success! Your ${item.name} has been redeemed.\n\nEstimated delivery: 3-5 business days to your registered address.`);
+      } catch (error) {
+        console.error("Redemption failed:", error);
+        alert("Something went wrong while processing your redemption. Please try again.");
+      }
     } else {
       alert("Not enough coins! Keep reporting civic issues to earn more rewards.");
     }
