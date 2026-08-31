@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Award, Gift, Coins, CheckCircle2, Sparkles } from "lucide-react";
+import { Award, Gift, Coins, CheckCircle2, Sparkles, Package, Clock } from "lucide-react";
 
 const api = axios.create({ baseURL: 'https://nagrik-nova.onrender.com/api' });
 
@@ -15,26 +15,41 @@ const mockProducts = [
 export default function Rewards({ user }) {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState([]);
   const userId = user?.id || user?._id;
 
-  // Fetch the latest official coin balance from the database
   useEffect(() => {
     if (userId) {
       api.get(`/users/${userId}`)
         .then(res => setBalance(res.data.coins || 0))
         .catch(err => console.error("Could not fetch wallet", err))
         .finally(() => setLoading(false));
+
+      // Load the user's order history from LocalStorage
+      const savedOrders = JSON.parse(localStorage.getItem(`nn-orders-${userId}`) || "[]");
+      setOrders(savedOrders);
     }
   }, [userId]);
 
   const handleRedeem = async (item) => {
     if (balance >= item.price) {
       try {
-        // THE FIX: Send the transaction to the database so it is permanent!
         const res = await api.post(`/users/${userId}/redeem`, { cost: item.price });
-        
-        // Update the UI with the official new balance from the server
         setBalance(res.data.coins);
+
+        // Generate a new mock order and save it!
+        const newOrder = {
+          orderId: `ORD-${Math.floor(Math.random() * 100000)}`,
+          name: item.name,
+          date: new Date().toLocaleDateString(),
+          status: "Processing",
+          icon: item.icon
+        };
+        
+        const updatedOrders = [newOrder, ...orders];
+        setOrders(updatedOrders);
+        localStorage.setItem(`nn-orders-${userId}`, JSON.stringify(updatedOrders));
+
         alert(`🎉 Success! Your ${item.name} has been redeemed.\n\nEstimated delivery: 3-5 business days to your registered address.`);
       } catch (error) {
         console.error("Redemption failed:", error);
@@ -47,14 +62,13 @@ export default function Rewards({ user }) {
 
   return (
     <section className="page">
-      <div className="page-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="page-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
         <div>
           <div className="eyebrow"><Award size={15} /> Changemaker Rewards</div>
           <h1>Redeem your <em>impact.</em></h1>
           <p>Use the coins you earned from reporting issues to claim rewards.</p>
         </div>
         
-        {/* The Virtual Wallet UI */}
         <div style={{ backgroundColor: '#059669', color: 'white', padding: '15px 25px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 25px rgba(5, 150, 105, 0.3)' }}>
           <Coins size={28} />
           <div>
@@ -66,7 +80,7 @@ export default function Rewards({ user }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '30px' }}>
         {mockProducts.map((item) => (
-          <div key={item.id} style={{ border: '1px solid #eaeaea', borderRadius: '12px', padding: '20px', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', gap: '15px', transition: 'transform 0.2s', cursor: 'pointer' }} className="reward-card">
+          <div key={item.id} style={{ border: '1px solid #eaeaea', borderRadius: '12px', padding: '20px', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', gap: '15px', transition: 'transform 0.2s' }} className="reward-card">
             <div style={{ fontSize: '40px', textAlign: 'center', padding: '20px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
               {item.icon}
             </div>
@@ -85,6 +99,29 @@ export default function Rewards({ user }) {
           </div>
         ))}
       </div>
+
+      {/* --- NEW: YOUR ORDERS SECTION --- */}
+      {orders.length > 0 && (
+        <div style={{ marginTop: '50px', borderTop: '1px solid #eaeaea', paddingTop: '30px' }}>
+          <h2><Package size={22} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px' }}/> Your Orders</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+            {orders.map((order) => (
+              <div key={order.orderId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 20px', backgroundColor: '#f9fafb', borderRadius: '10px', border: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <span style={{ fontSize: '24px' }}>{order.icon}</span>
+                  <div>
+                    <h4 style={{ margin: 0 }}>{order.name}</h4>
+                    <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Order ID: {order.orderId} • Placed on {order.date}</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#d97706', fontWeight: 'bold', fontSize: '14px', backgroundColor: '#fef3c7', padding: '6px 12px', borderRadius: '20px' }}>
+                  <Clock size={14} /> {order.status}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
