@@ -102,11 +102,9 @@ export default function ARReporter({ onLocationSaved }) {
   }, [stagedPin]);
 
   const startAR = async () => {
-    // Check if WebXR AR is actually supported on this device/browser
     const supported = navigator.xr ? await navigator.xr.isSessionSupported("immersive-ar") : false;
     
     if (!supported) {
-      // Graceful Fallback for Laptops/Desktops!
       setIsDesktopMode(true);
       setStagedPin({ x: 0, y: 0, z: -2 });
       return;
@@ -199,7 +197,26 @@ export default function ARReporter({ onLocationSaved }) {
                     : "📍 Ticket anchored — GPS locked"}
                 </div>
 
-                {stagedPin && (
+                {/* --- THE FIX: SHOW LOADER WHILE LOCATING --- */}
+                {stagedPin && geoStatus === "locating" && (
+                  <div style={{ display: "flex", justifyContent: "center", pointerEvents: "auto", marginBottom: "30px" }}>
+                    <div style={{
+                      padding: "16px 24px",
+                      background: "rgba(10, 10, 10, 0.85)",
+                      color: "#00e5ff",
+                      borderRadius: "10px",
+                      border: "1px solid #00e5ff",
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                      backdropFilter: "blur(5px)"
+                    }}>
+                      ⏳ Locking GPS Coordinates...
+                    </div>
+                  </div>
+                )}
+
+                {/* --- THE FIX: SHOW BUTTONS ONLY WHEN NOT LOCATING --- */}
+                {stagedPin && geoStatus !== "locating" && (
                   <div style={{ display: "flex", gap: "15px", pointerEvents: "auto", marginBottom: "30px", justifyContent: "center" }}>
                     <button
                       type="button"
