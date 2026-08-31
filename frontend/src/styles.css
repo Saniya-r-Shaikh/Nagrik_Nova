@@ -280,28 +280,44 @@ button.menu {
   color: #059669;
 }
 
+/* ========================================================= */
+/* 📱 ULTIMATE MOBILE RESPONSIVENESS (PHONES & TABLETS)      */
+/* ========================================================= */
 @media (max-width: 850px) {
+  
+  /* 0. THE NUCLEAR FIX: Stop all horizontal scrolling and overflow */
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Force every single element to keep its padding inside its width */
+  * {
+    box-sizing: border-box !important;
+  }
+
   /* 1. Typography & Breathing Room */
   h1 { font-size: 2.2rem !important; line-height: 1.1 !important; }
   h2 { font-size: 1.8rem !important; line-height: 1.2 !important; }
   
-  /* Fixed box-sizing so forms don't overflow the screen */
   .page, .hero, section { 
-    padding: 25px 15px !important; 
-    box-sizing: border-box; 
-    width: 100%; 
+    padding: 25px 20px !important; 
+    width: 100% !important;
   }
 
-  /* --- FIX: PREMIUM MOBILE MENU ALIGNMENT --- */
-  /* --- FIX: PREMIUM MOBILE MENU OVERLAY --- */
+  /* 2. Premium Mobile Menu Overlay */
   header {
     flex-wrap: wrap !important; 
-    padding: 15px !important;
+    padding: 15px 20px !important;
     background: white !important; 
     position: sticky;
     top: 0;
-    z-index: 99999 !important; /* Ultra-high z-index defeats the map controls */
+    z-index: 99999 !important; 
     border-bottom: 1px solid #eaeaea;
+    width: 100% !important;
   }
   
   button.menu {
@@ -315,11 +331,7 @@ button.menu {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 10px !important;
-    padding: 20px 15px 30px 15px !important; 
-    white-space: normal !important;
-    box-sizing: border-box;
-
-    /* THE MAGIC FIX: Make it float over the map instead of pushing it down */
+    padding: 20px 20px 30px 20px !important; 
     position: absolute !important;
     top: 100% !important;
     left: 0 !important;
@@ -329,49 +341,65 @@ button.menu {
     border-bottom: 1px solid #eaeaea;
   }
   
-  header nav.show {
-    display: flex !important; 
-  }
+  header nav.show { display: flex !important; }
   
   header nav a, header nav button.text-btn {
     width: 100%;
     justify-content: flex-start;
-    /* Added left padding to indent the text slightly */
     padding: 12px 10px !important; 
     font-size: 1.1rem;
-    box-sizing: border-box;
   }
 
-  /* Fixed Avatar and Sign Out alignment */
-  /* --- FIX: AVATAR & SIGN OUT ALIGNMENT --- */
+  /* 3. Avatar & Sign Out Alignment */
   .nav-user {
     display: flex !important;
     flex-direction: row !important; 
     align-items: center !important;
     justify-content: flex-start !important;
-    gap: 15px !important; /* Keeps the text right next to the dot */
+    gap: 15px !important; 
     padding: 10px 10px !important;
     width: 100%;
-    box-sizing: border-box;
   }
 
   .nav-user button.text-btn {
-    width: auto !important; /* Stops the button from stretching and centering */
+    width: auto !important; 
     padding: 0 !important;
     margin: 0 !important;
   }
+  
+  .btn {
+    width: 100% !important; 
+    justify-content: center !important;
+    padding: 15px !important;
+  }
 
-  /* --- FIX: DASHBOARD & ALIGNMENT --- */
+  /* 4. Dashboard Grid & Form Locking (THE MAIN FIX) */
+  .dash-grid {
+    display: flex !important;
+    flex-direction: column !important; /* Forces stack instead of grid */
+    gap: 25px !important;
+    width: 100% !important;
+    padding: 0 !important; 
+    margin: 0 !important;
+  }
+
+  .dash-grid aside, .dash-grid main, .report-form, .issue-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .report-form input, .report-form textarea, .report-form select {
+    width: 100% !important;
+    min-width: 0 !important; /* Stops flexbox from stretching inputs */
+  }
+
+  /* 5. General Layout Stacking */
   .hero, .detail-top, .page-head {
     flex-direction: column !important;
     text-align: left;
     gap: 20px !important;
     width: 100% !important;
-  }
-
-  form.report-form, .my-issues, .issue-grid {
-    width: 100% !important;
-    box-sizing: border-box;
   }
   
   .hero-actions, .nav-auth {
@@ -385,10 +413,9 @@ button.menu {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important; 
     gap: 20px;
-    padding: 30px 15px;
   }
 
-  .steps, .dash-grid, .two, .analysis-grid {
+  .steps, .two, .analysis-grid {
     display: grid !important;
     grid-template-columns: 1fr !important; 
     gap: 25px !important;
@@ -399,94 +426,13 @@ button.menu {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 30px !important;
-    padding: 40px 15px !important;
+    padding: 40px 20px !important;
   }
 
-  /* --- FIX: FULL WIDTH MAP --- */
-  /* This pulls the map out of the padding wrapper to span edge-to-edge */
+  /* 6. Full Width Map */
   .leaflet-container, .mapboxgl-map, #map {
     width: 100vw !important;
-    margin-left: -15px !important; 
+    margin-left: -20px !important; /* Pulls it exactly to the screen edge */
     border-radius: 0 !important; 
-  }
-
-  /* --- FIX: DASHBOARD FORMS NOT CENTERING --- */
-  /* Force all inputs and textareas to respect the screen width */
-  input, textarea, select {
-    width: 100% !important;
-    max-width: 100vw !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Keep the main dashboard containers from overflowing */
-  .dash-grid aside, .dash-grid main {
-    width: 100% !important;
-    padding: 10px !important; 
-    box-sizing: border-box !important;
-    overflow-x: hidden !important; 
-  }
-
-  /* --- FIX: DASHBOARD CARDS TOUCHING SCREEN EDGES --- */
-  .page {
-    padding: 25px 15px !important;
-    box-sizing: border-box !important;
-    width: 100vw !important;
-    overflow-x: hidden !important;
-  }
-
-  .dash-grid {
-    padding: 0 !important; 
-    width: 100% !important;
-  }
-
-  /* Forces all cards to respect the padding of the page */
-  .issue-card, .my-issues div, .dashboard main div {
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  /* --- FIX: BALANCED LEFT AND RIGHT PADDING --- */
-  html, body {
-    overflow-x: hidden !important;
-    max-width: 100% !important;
-  }
-
-  .page, .hero, section, header {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important; /* Forces the right space to match the left */
-  }
-  
-  .dash-grid aside, .dash-grid main, .issue-card, form.report-form {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  /* --- FIX: DASHBOARD FORM RIGHT-SIDE OVERFLOW --- */
-  
-  /* 1. Stop the grid from pulling outward */
-  .dash-grid {
-    margin: 0 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  /* 2. Lock the white form box so it respects the page padding */
-  .dash-grid aside, .report-form {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    margin: 0 !important; /* Kills any rogue margins pulling it right */
-  }
-
-  /* 3. Stop text inputs from secretly stretching the box */
-  .report-form input, .report-form textarea {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    min-width: 0 !important; /* This stops flex-box stretching on phones */
   }
 }
