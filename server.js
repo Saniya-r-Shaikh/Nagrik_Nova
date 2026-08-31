@@ -13,7 +13,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.log('❌ DB Error:', err.message));
 
 // --- MODELS (6 Collections) ---
-const User = mongoose.model('User', new mongoose.Schema({ username: String, password: String, role: String }));
+const User = mongoose.model('User', new mongoose.Schema({ username: String, password: String, role: String, coins: { type: Number, default: 0 } }));
 const Ticket = mongoose.model('Ticket', new mongoose.Schema({ 
   ticketId: String, 
   title: String, 
@@ -204,6 +204,13 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
     ticket.analyzed = true;
     ticket.domain = aiData.domain;
     ticket.priority = aiData.priority;
+    // Determine the coin reward based on the AI's priority assessment
+
+
+// Find the user who submitted the ticket and add the coins to their wallet
+await User.findByIdAndUpdate(ticket.submittedBy, {
+    $inc: { coins: coinReward }
+});
     ticket.requiredExpertise = aiData.requiredExpertise;
     ticket.solutionIdea = aiData.solutionIdea;
     
@@ -215,6 +222,21 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
         expertise: aiData.requiredExpertise 
       }
     ];
+    // --- COIN REWARD LOGIC ---
+    let coinReward = 10; // Default for low priority
+    if (aiData.priority === "High") coinReward = 50;
+    else if (aiData.priority === "Medium") coinReward = 30;
+
+    // Add coins to the user who submitted the ticket
+    if (ticket.submittedBy) {
+      await User.findByIdAndUpdate(ticket.submittedBy, {
+        $inc: { coins: coinReward }
+      });
+      console.log(`🪙 Awarded ${coinReward} coins to user ${ticket.submittedBy}`);
+    }
+    // -------------------------
+
+    
 
     await ticket.save();
     console.log("[AI AGENT] Analysis complete! Sending to frontend.");
@@ -306,5 +328,6 @@ app.post('/api/ai/chat', async (req, res) => {
         res.status(500).json({ error: "Failed to process AI request." });
     }
 });
+
 // --- START SERVER ---
 app.listen(5000, () => console.log('Server live on port 5000'));

@@ -1,3 +1,4 @@
+import Rewards from "./Rewards";
 import CitizenMap from "./CitizenMap";
 import AIChatWidget from './AIChatWidget';
 import ARReporter from "./ARReporter";
@@ -126,6 +127,14 @@ function App() {
             }
           />
           <Route
+            path="/rewards"
+            element={
+              <Require user={auth.user}>
+                <Rewards user={auth.user} />
+              </Require>
+            }
+          />
+          <Route
             path="/map"
             element={
               <Require user={auth.user}>
@@ -184,6 +193,12 @@ function Nav({ auth }) {
         
         {auth.user && ["citizen", "ngo"].includes(auth.user.role) && (
           <NavLink to="/dashboard">My dashboard</NavLink>
+        )}
+        {auth.user && ["citizen", "ngo"].includes(auth.user.role) && (
+          <>
+            <NavLink to="/dashboard">My dashboard</NavLink>
+            <NavLink to="/rewards">Rewards Store</NavLink>
+          </>
         )}
         
         {auth.user && auth.user.role === "admin" && (
