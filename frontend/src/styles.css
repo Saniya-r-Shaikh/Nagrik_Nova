@@ -280,6 +280,24 @@ button.menu {
   color: #059669;
 }
 
+/* --- FIX: DASHBOARD SPACING & OVERLAPS --- */
+
+/* Ensure the main dashboard grid always has a gap between columns/rows */
+.dash-grid {
+  gap: 40px !important; 
+}
+
+/* Force a top margin on the reports section so it never touches the referral box */
+.my-issues, .dashboard main {
+  margin-top: 30px !important;
+  clear: both !important;
+}
+
+/* Add a bottom margin to the referral/wallet cards just in case */
+.referral-box, .referral-card, aside > div {
+  margin-bottom: 30px !important;
+}
+
 /* ========================================================= */
 /* 📱 ULTIMATE MOBILE RESPONSIVENESS (PHONES & TABLETS)      */
 /* ========================================================= */
