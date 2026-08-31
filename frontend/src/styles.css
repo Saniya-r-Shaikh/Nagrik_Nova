@@ -268,3 +268,105 @@ body.colorblind-mode .link-action {
   text-decoration: underline !important; 
   text-underline-offset: 4px;
 }
+
+/* --- MOBILE RESPONSIVENESS (PHONES & TABLETS) --- */
+
+/* 1. Hide the hamburger menu button on Desktop by default */
+button.menu {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #059669;
+}
+
+@media (max-width: 850px) {
+  /* Typography Scaling */
+  h1 { font-size: 2.2rem !important; }
+  h2 { font-size: 1.8rem !important; }
+  .page, .hero, section { padding: 40px 20px !important; }
+
+  /* 2. Fix the Header & Mobile Hamburger Menu */
+  header {
+    flex-wrap: wrap !important; /* Allow the nav to drop below the logo */
+    padding: 15px 20px !important;
+  }
+  
+  button.menu {
+    display: block !important; /* Show the hamburger icon */
+  }
+  
+  header nav {
+    display: none !important; /* Hide menu by default on mobile */
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 15px !important;
+    padding-top: 20px !important;
+    white-space: normal !important;
+    border-top: 1px solid #eaeaea;
+    margin-top: 15px;
+  }
+  
+  header nav.show {
+    display: flex !important; /* Show menu when hamburger is clicked */
+  }
+  
+  header nav a, header nav button, header nav div {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* 3. Stack the Hero Section */
+  .hero {
+    flex-direction: column !important;
+    text-align: left;
+    gap: 40px;
+  }
+  .hero-actions {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .hero-art {
+    width: 100%;
+    min-height: 300px;
+  }
+
+  /* 4. Fix the Impact Strip (01, 02, 03, 04) */
+  .impact-strip {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* Make it a 2x2 grid */
+    gap: 20px;
+    padding: 30px 20px;
+  }
+
+  /* 5. Stack the Cards (Steps, Dashboard Grid, Issue Forms) */
+  .steps, .dash-grid, .two, .analysis-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important; /* Stack everything into 1 column */
+    gap: 20px !important;
+  }
+
+  /* 6. Fix Page Headers (Like on the Rewards / Detail pages) */
+  .page-head {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 20px;
+  }
+  .page-head div {
+    width: 100%;
+  }
+  
+  .detail-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 20px;
+  }
+
+  /* 7. Stack the Footer */
+  footer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 30px !important;
+  }
+}
