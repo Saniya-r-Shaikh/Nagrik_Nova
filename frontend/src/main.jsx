@@ -881,7 +881,6 @@ function Dashboard({ user }) {
 }
 
 function Detail({ user }) {
-  // NEW: Added nav so we can redirect the user after they delete an issue
   const nav = useNavigate();
   const { id } = useParams(),
     [issue, setIssue] = useState(null),
@@ -958,23 +957,21 @@ function Detail({ user }) {
     }
   };
 
-  // --- NEW: DELETE ISSUE FUNCTION ---
   const deleteIssue = async () => {
     if (!window.confirm("Are you sure you want to permanently delete this report? This cannot be undone.")) return;
     try {
       await api.delete(`/issues/${id}`);
-      nav("/issues"); // Send them back to the feed since this page is gone!
+      nav("/issues"); 
     } catch (e) {
       alert("Failed to delete issue.");
     }
   };
 
-  // --- NEW: DELETE COMMENT FUNCTION ---
   const deleteComment = async (commentId) => {
     if (!window.confirm("Delete this comment?")) return;
     try {
       const r = await api.delete(`/issues/${id}/comments/${commentId}`);
-      setIssue(r.data); // Immediately updates the UI
+      setIssue(r.data); 
     } catch (e) {
       alert("Failed to delete comment.");
     }
@@ -1025,7 +1022,6 @@ function Detail({ user }) {
   if (err && !issue) return <section className="page"><div className="error">{err}</div></section>;
   if (!issue) return <Loading />;
 
-  // Checks if the user is an admin OR if they are the original author
   const canModifyIssue = user.role === 'admin' || user.id === issue.submittedBy || user._id === issue.submittedBy;
 
   return (
@@ -1053,37 +1049,39 @@ function Detail({ user }) {
         </div>
         
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {/* NEW: Conditional Delete Issue Button */}
+          
+          {/* 1. Analyze with AI */}
+          {user.role === "admin" && !issue.analyzed && (
+            <button className="btn analyze" disabled={busy} onClick={analyze}>
+              {busy ? (
+                <LoaderCircle className="spin" size={17} />
+              ) : (
+                <BrainCircuit size={18} />
+              )}{" "}
+              {busy ? "Analyzing signal…" : "Analyze with AI"}
+            </button>
+          )}
+
+          {/* 2. Delete Report */}
           {canModifyIssue && (
             <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.85)' }} onClick={deleteIssue}>
               🗑️ Delete Report
             </button>
           )}
 
+          {/* 3. Flag Content */}
           {user.role === "admin" && (
-            <>
-              {issue.isFlagged ? (
-                <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.5)' }} disabled>
-                  🚩 Flagged
-                </button>
-              ) : (
-                <button className="btn" style={{ background: 'rgba(201, 81, 71, 0.85)' }} disabled={isFlagging} onClick={flagIssue}>
-                  {isFlagging ? "Flagging..." : "🚩 Flag Content"}
-                </button>
-              )}
-              
-              {!issue.analyzed && (
-                <button className="btn analyze" disabled={busy} onClick={analyze}>
-                  {busy ? (
-                    <LoaderCircle className="spin" size={17} />
-                  ) : (
-                    <BrainCircuit size={18} />
-                  )}{" "}
-                  {busy ? "Analyzing signal…" : "Analyze with AI"}
-                </button>
-              )}
-            </>
+            issue.isFlagged ? (
+              <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.5)' }} disabled>
+                🚩 Flagged
+              </button>
+            ) : (
+              <button className="btn" style={{ background: 'rgba(201, 81, 71, 0.85)' }} disabled={isFlagging} onClick={flagIssue}>
+                {isFlagging ? "Flagging..." : "🚩 Flag Content"}
+              </button>
+            )
           )}
+
         </div>
       </div>
 
@@ -1159,7 +1157,6 @@ function Detail({ user }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px' }}>
           {issue.comments && issue.comments.length > 0 ? (
             issue.comments.map((c, i) => {
-              // NEW: Check if this specific user is allowed to delete this specific comment
               const canDeleteComment = user.role === 'admin' || user.name === c.postedBy;
               
               return (
@@ -1170,7 +1167,6 @@ function Detail({ user }) {
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                       <span style={{ color: '#888' }}>{new Date(c.createdAt).toLocaleDateString()}</span>
                       
-                      {/* NEW: Conditional Delete Comment Button */}
                       {canDeleteComment && (
                         <button 
                           onClick={() => deleteComment(c._id)} 
