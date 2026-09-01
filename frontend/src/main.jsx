@@ -881,28 +881,6 @@ function Dashboard({ user }) {
 }
 
 function Detail({ user }) {
-  const [newComment, setNewComment] = useState("");
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const handleCommentSubmit = async (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-    setIsSubmittingComment(true);
-    
-    try {
-      const r = await api.post(`/issues/${id}/comments`, {
-        text: newComment,
-        postedBy: user.name,
-        role: user.role
-      });
-      setIssue(r.data); // Updates the UI with the new comment
-      setNewComment("");
-    } catch (err) {
-      alert("Failed to post comment");
-    } finally {
-      setIsSubmittingComment(false);
-    }
-  };
-
   const { id } = useParams(),
     [issue, setIssue] = useState(null),
     [busy, setBusy] = useState(false),
@@ -913,6 +891,21 @@ function Detail({ user }) {
   const [pledges, setPledges] = useState([]);
   const [pledgeText, setPledgeText] = useState("");
   const [showPledgeForm, setShowPledgeForm] = useState(false);
+  
+  const [newComment, setNewComment] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  // NEW: Create a reference for the Analysis section
+  const analysisRef = React.useRef(null);
+
+  // NEW: Watch for when the issue becomes analyzed, and smoothly scroll to it
+  useEffect(() => {
+    if (issue?.analyzed && analysisRef.current) {
+      setTimeout(() => {
+        analysisRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150); // Tiny delay to let the DOM paint the new section first
+    }
+  }, [issue?.analyzed]);
 
   useEffect(() => {
     api
@@ -979,6 +972,26 @@ function Detail({ user }) {
     }
   };
 
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    setIsSubmittingComment(true);
+    
+    try {
+      const r = await api.post(`/issues/${id}/comments`, {
+        text: newComment,
+        postedBy: user.name,
+        role: user.role
+      });
+      setIssue(r.data); 
+      setNewComment("");
+    } catch (err) {
+      alert("Failed to post comment");
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
   if (err && !issue)
     return (
       <section className="page">
@@ -1028,48 +1041,6 @@ function Detail({ user }) {
         <h2>What the community is seeing</h2>
         <p>{issue.description}</p>
       </article>
-
-      {/* NEW: Display the high-res image if it exists */}
-      {issue.imageUrl && (
-        <div style={{ margin: '30px 0', borderRadius: '12px', overflow: 'hidden' }}>
-          <img src={issue.imageUrl} alt="Issue evidence" style={{ width: '100%', maxHeight: '500px', objectFit: 'cover' }} />
-        </div>
-      )}
-
-      {/* NEW: Community Comments Section */}
-      <div style={{ background: '#fff', padding: '25px', borderRadius: '12px', border: '1px solid #e1e6df', marginBottom: '30px' }}>
-        <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>Community Discussion</h3>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px' }}>
-          {issue.comments && issue.comments.length > 0 ? (
-            issue.comments.map((c, i) => (
-              <div key={i} style={{ padding: '15px', background: '#f7f9f6', borderRadius: '8px', borderLeft: '3px solid var(--green)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
-                  <strong>{c.postedBy} <span style={{ color: '#888', fontWeight: 'normal' }}>({c.role})</span></strong>
-                  <span style={{ color: '#888' }}>{new Date(c.createdAt).toLocaleDateString()}</span>
-                </div>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{c.text}</p>
-              </div>
-            ))
-          ) : (
-            <p style={{ color: '#888', fontStyle: 'italic', fontSize: '14px' }}>No comments yet. Start the conversation!</p>
-          )}
-        </div>
-
-        {/* Comment Input Form */}
-        <form onSubmit={handleCommentSubmit} style={{ display: 'flex', gap: '10px' }}>
-          <input 
-            type="text" 
-            placeholder="Add a comment..." 
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            style={{ flexGrow: 1 }}
-          />
-          <button type="submit" className="btn small" disabled={isSubmittingComment}>
-            {isSubmittingComment ? "Posting..." : "Post"}
-          </button>
-        </form>
-      </div>
 
       <div className="community-impact">
         <div className="impact-header">
@@ -1123,8 +1094,52 @@ function Detail({ user }) {
         )}
       </div>
 
+      {/* High-res image display */}
+      {issue.imageUrl && (
+        <div style={{ margin: '30px 0', borderRadius: '12px', overflow: 'hidden' }}>
+          <img src={issue.imageUrl} alt="Issue evidence" style={{ width: '100%', maxHeight: '500px', objectFit: 'cover' }} />
+        </div>
+      )}
+
+      {/* Community Comments Section */}
+      <div style={{ background: '#fff', padding: '25px', borderRadius: '12px', border: '1px solid #e1e6df', marginBottom: '30px' }}>
+        <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>Community Discussion</h3>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px' }}>
+          {issue.comments && issue.comments.length > 0 ? (
+            issue.comments.map((c, i) => (
+              <div key={i} style={{ padding: '15px', background: '#f7f9f6', borderRadius: '8px', borderLeft: '3px solid var(--green)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
+                  <strong>{c.postedBy} <span style={{ color: '#888', fontWeight: 'normal' }}>({c.role})</span></strong>
+                  <span style={{ color: '#888' }}>{new Date(c.createdAt).toLocaleDateString()}</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{c.text}</p>
+              </div>
+            ))
+          ) : (
+            <p style={{ color: '#888', fontStyle: 'italic', fontSize: '14px' }}>No comments yet. Start the conversation!</p>
+          )}
+        </div>
+
+        <form onSubmit={handleCommentSubmit} style={{ display: 'flex', gap: '10px' }}>
+          <input 
+            type="text" 
+            placeholder="Add a comment..." 
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            style={{ flexGrow: 1 }}
+          />
+          <button type="submit" className="btn small" disabled={isSubmittingComment}>
+            {isSubmittingComment ? "Posting..." : "Post"}
+          </button>
+        </form>
+      </div>
+
       {issue.analyzed ? (
-        <Analysis issue={issue} />
+        // NEW: Wrapper div with the ref attached so the page knows where to scroll!
+        <div ref={analysisRef} style={{ scrollMarginTop: '100px' }}>
+          <Analysis issue={issue} />
+        </div>
       ) : (
         <div className="await">
           <BrainCircuit />
