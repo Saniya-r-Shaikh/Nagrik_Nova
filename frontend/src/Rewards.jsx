@@ -31,8 +31,17 @@ export default function Rewards({ user }) {
     }
   }, [userId]);
 
-  const handleRedeem = async (item) => {
+  // THE FIX: Added 'e' to handle the event and stop the double-tap bug
+  const handleRedeem = async (e, item) => {
+    e.preventDefault();
+    e.stopPropagation(); // Forces immediate click, ignoring the card hover state
+
     if (balance >= item.price) {
+      // THE FIX: Added the specific confirmation popup you requested
+      const confirmRedeem = window.confirm(`Do you want to redeem '${item.name}' for ${item.price} Nova Coins?`);
+      
+      if (!confirmRedeem) return; // Stop if they click cancel
+
       try {
         const res = await api.post(`/users/${userId}/redeem`, { cost: item.price });
         setBalance(res.data.coins);
@@ -69,7 +78,6 @@ export default function Rewards({ user }) {
           <p>Use the coins you earned from reporting issues to claim rewards.</p>
         </div>
         
-        {/* THE FIX: Replaced solid inline styles with the chat-bubble class for 3D green glass */}
         <div className="chat-bubble" style={{ padding: '15px 25px', display: 'flex', alignItems: 'center', gap: '15px' }}>
           <Coins size={32} color="#fff" />
           <div style={{ color: '#fff' }}>
@@ -81,7 +89,6 @@ export default function Rewards({ user }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '30px' }}>
         {mockProducts.map((item) => (
-          /* THE FIX: Added "issue" class to make the cards frosted 3D glass */
           <div key={item.id} className="issue" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', minHeight: 'auto' }}>
             <div style={{ fontSize: '40px', textAlign: 'center', padding: '20px', background: 'rgba(255, 255, 255, 0.4)', borderRadius: '12px', boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.02)' }}>
               {item.icon}
@@ -92,15 +99,17 @@ export default function Rewards({ user }) {
                 <Sparkles size={16}/> {item.price} Coins
               </span>
               
-              {/* THE FIX: Replaced solid styles with "btn small" class */}
               <button 
+                type="button"
                 className="btn small"
-                onClick={() => handleRedeem(item)}
+                onClick={(e) => handleRedeem(e, item)}
                 disabled={balance < item.price}
                 style={{ 
                   cursor: balance >= item.price ? 'pointer' : 'not-allowed',
                   opacity: balance >= item.price ? 1 : 0.5,
-                  padding: '8px 16px'
+                  padding: '8px 16px',
+                  position: 'relative', 
+                  zIndex: 10 
                 }}
               >
                 Redeem
@@ -115,7 +124,6 @@ export default function Rewards({ user }) {
           <h2><Package size={22} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px' }}/> Your Orders</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
             {orders.map((order) => (
-              /* THE FIX: Added "issue" class here too for glass order panels */
               <div key={order.orderId} className="issue" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 20px', minHeight: 'auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                   <span style={{ fontSize: '24px' }}>{order.icon}</span>
