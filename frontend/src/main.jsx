@@ -107,6 +107,16 @@ const useAuth = () => {
   return { user, signIn, out };
 };
 
+// --- IMAGE UPLOAD HELPER ---
+const convertToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.readAsDataURL(file);
+    fileReader.onload = () => resolve(fileReader.result);
+    fileReader.onerror = (error) => reject(error);
+  });
+};
+
 function App() {
   const auth = useAuth();
   return (
@@ -606,27 +616,37 @@ function Issues({ user }) {
 
 function IssueCard({ issue }) {
   return (
-    <Link to={`/issues/${issue._id}`} className="issue">
-      <div className="issue-meta">
-        <span className="role">{issue.submitterRole}</span>
-        {issue.analyzed ? (
-          <span className={`priority ${issue.priority?.toLowerCase()}`}>
-            {issue.priority} priority
+    <Link to={`/issues/${issue._id}`} className="issue" style={{ overflow: 'hidden', padding: 0 }}>
+      {/* NEW: Display the image if it exists */}
+      {issue.imageUrl && (
+        <img 
+          src={issue.imageUrl} 
+          alt="Issue" 
+          style={{ width: '100%', height: '180px', objectFit: 'cover', borderBottom: '1px solid #e1e6df' }} 
+        />
+      )}
+      <div style={{ padding: '21px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+        <div className="issue-meta">
+          <span className="role">{issue.submitterRole}</span>
+          {issue.analyzed ? (
+            <span className={`priority ${issue.priority?.toLowerCase()}`}>
+              {issue.priority} priority
+            </span>
+          ) : (
+            <span className="pending">Awaiting analysis</span>
+          )}
+        </div>
+        <h3>{issue.title}</h3>
+        <p>{issue.description}</p>
+        <div className="issue-bottom">
+          <span>
+            <MapPin size={15} />
+            {issue.location}
           </span>
-        ) : (
-          <span className="pending">Awaiting analysis</span>
-        )}
-      </div>
-      <h3>{issue.title}</h3>
-      <p>{issue.description}</p>
-      <div className="issue-bottom">
-        <span>
-          <MapPin size={15} />
-          {issue.location}
-        </span>
-        <span className="arrow-circle">
-          <ArrowRight size={16} />
-        </span>
+          <span className="arrow-circle">
+            <ArrowRight size={16} />
+          </span>
+        </div>
       </div>
     </Link>
   );
@@ -637,6 +657,7 @@ function Dashboard({ user }) {
     [issues, setIssues] = useState([]);
   
   const [data, setData] = useState({ title: "", description: "", state: "", city: "", location: "" });
+  const [imagePreview, setImagePreview] = useState(null);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [locationAttached, setLocationAttached] = useState(null); 
@@ -653,6 +674,7 @@ function Dashboard({ user }) {
         ),
       );
   }, [user.id]);
+  
 
   const post = async (e) => {
     e.preventDefault();
@@ -718,6 +740,18 @@ function Dashboard({ user }) {
             />
           </label>
         
+        <label>
+            Attach a photo (Optional)
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageUpload} 
+              style={{ padding: '8px', background: '#f9f9f9', border: '1px dashed #ccc' }} 
+            />
+          </label>
+          {imagePreview && (
+            <img src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '8px', marginTop: '10px' }} />
+          )}
           <div className="two">
             <label>
               State
@@ -822,6 +856,28 @@ function Dashboard({ user }) {
 }
 
 function Detail({ user }) {
+  const [newComment, setNewComment] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    setIsSubmittingComment(true);
+    
+    try {
+      const r = await api.post(`/issues/${id}/comments`, {
+        text: newComment,
+        postedBy: user.name,
+        role: user.role
+      });
+      setIssue(r.data); // Updates the UI with the new comment
+      setNewComment("");
+    } catch (err) {
+      alert("Failed to post comment");
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
   const { id } = useParams(),
     [issue, setIssue] = useState(null),
     [busy, setBusy] = useState(false),
@@ -947,6 +1003,48 @@ function Detail({ user }) {
         <h2>What the community is seeing</h2>
         <p>{issue.description}</p>
       </article>
+
+      {/* NEW: Display the high-res image if it exists */}
+      {issue.imageUrl && (
+        <div style={{ margin: '30px 0', borderRadius: '12px', overflow: 'hidden' }}>
+          <img src={issue.imageUrl} alt="Issue evidence" style={{ width: '100%', maxHeight: '500px', objectFit: 'cover' }} />
+        </div>
+      )}
+
+      {/* NEW: Community Comments Section */}
+      <div style={{ background: '#fff', padding: '25px', borderRadius: '12px', border: '1px solid #e1e6df', marginBottom: '30px' }}>
+        <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>Community Discussion</h3>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px' }}>
+          {issue.comments && issue.comments.length > 0 ? (
+            issue.comments.map((c, i) => (
+              <div key={i} style={{ padding: '15px', background: '#f7f9f6', borderRadius: '8px', borderLeft: '3px solid var(--green)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
+                  <strong>{c.postedBy} <span style={{ color: '#888', fontWeight: 'normal' }}>({c.role})</span></strong>
+                  <span style={{ color: '#888' }}>{new Date(c.createdAt).toLocaleDateString()}</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{c.text}</p>
+              </div>
+            ))
+          ) : (
+            <p style={{ color: '#888', fontStyle: 'italic', fontSize: '14px' }}>No comments yet. Start the conversation!</p>
+          )}
+        </div>
+
+        {/* Comment Input Form */}
+        <form onSubmit={handleCommentSubmit} style={{ display: 'flex', gap: '10px' }}>
+          <input 
+            type="text" 
+            placeholder="Add a comment..." 
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            style={{ flexGrow: 1 }}
+          />
+          <button type="submit" className="btn small" disabled={isSubmittingComment}>
+            {isSubmittingComment ? "Posting..." : "Post"}
+          </button>
+        </form>
+      </div>
 
       <div className="community-impact">
         <div className="impact-header">
