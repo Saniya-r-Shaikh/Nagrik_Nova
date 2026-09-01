@@ -18,53 +18,85 @@
 .quiet-art{background:radial-gradient(circle at 50% 43%,#f7fbec 0 14%,transparent 14.2%),linear-gradient(145deg,#e8f2d7,#d5ebca);display:block}.quiet-art>*{position:absolute}.constellation-lines{inset:14% 12%;border-radius:50%;background:conic-gradient(from 30deg,transparent 0 18%,rgba(48,116,94,.3) 18.4% 18.7%,transparent 19% 47%,rgba(48,116,94,.3) 47.4% 47.7%,transparent 48% 80%,rgba(48,116,94,.3) 80.4% 80.7%,transparent 81%);mask:radial-gradient(circle,transparent 0 25%,#000 25.4% 26.3%,transparent 26.7%);animation:turn 22s linear infinite}.constellation-lines:after{content:'';position:absolute;inset:8%;border:1px dashed rgba(48,116,94,.25);border-radius:50%}.constellation-core{z-index:3;left:50%;top:48%;transform:translate(-50%,-50%);width:132px;height:132px;border-radius:50%;background:#fffdf7;box-shadow:0 16px 35px rgba(38,91,64,.18),0 0 0 13px rgba(255,255,255,.36);display:grid;place-content:center;text-align:center;gap:6px;color:#2f745e;animation:corePulse 3.6s ease-in-out infinite}.constellation-core svg{margin:auto}.constellation-core span{font:700 10px 'DM Mono';text-transform:uppercase;letter-spacing:.3px}.constellation-node{z-index:4;width:48px;height:48px;border-radius:50%;background:#2f745e;box-shadow:0 0 0 8px rgba(255,255,255,.38);display:grid;place-items:center;animation:nodeFloat 4s ease-in-out infinite}.constellation-node span{width:14px;height:14px;border-radius:50%;background:#d9ec83;box-shadow:0 -10px 0 -3px #d9ec83}.node-a{top:19%;left:18%}.node-b{right:18%;top:28%;background:#286d91;animation-delay:-1.2s}.node-b span{background:#d9edf3;box-shadow:0 -10px 0 -3px #d9edf3}.node-c{bottom:18%;left:26%;background:#e59b4b;animation-delay:-2.1s}.node-c span{background:#fff3cb;box-shadow:0 -10px 0 -3px #fff3cb}.constellation-label{z-index:5;color:#376a58;background:rgba(255,255,250,.8);padding:6px 9px;border-radius:5px;font:600 9px 'DM Mono';text-transform:uppercase;letter-spacing:.25px}.label-a{top:17%;left:31%}.label-b{right:10%;top:43%}.label-c{left:17%;bottom:17%}.constellation-caption{z-index:5;bottom:23px;right:27px;color:#36725d;display:flex;gap:7px;align-items:center;font:500 10px 'DM Mono';text-transform:uppercase;letter-spacing:.2px}@keyframes turn{to{transform:rotate(360deg)}}@keyframes corePulse{50%{transform:translate(-50%,-50%) scale(1.06);box-shadow:0 18px 38px rgba(38,91,64,.2),0 0 0 22px rgba(255,255,255,.2)}}@keyframes nodeFloat{50%{transform:translateY(-10px)}}
 @media(max-width:760px){.constellation-core{transform:translate(-50%,-50%) scale(.72)}.constellation-node{transform:scale(.72)}.node-a{left:13%;top:18%}.node-b{right:11%;top:25%}.node-c{left:18%;bottom:22%}.constellation-label{font-size:7px;padding:5px}.label-a{left:29%;top:17%}.label-b{right:5%;top:42%}.label-c{left:14%;bottom:16%}.constellation-caption{bottom:15px;right:15px;font-size:7px}.constellation-lines{inset:8%}.constellation-core{animation:corePulseMobile 3.6s ease-in-out infinite}@keyframes corePulseMobile{50%{transform:translate(-50%,-50%) scale(.78)}}}
 
-/* --- THE APPLE iOS LIQUID GLASS EFFECT --- */
+/* --- V3: ORIGINAL COLORS + 3D LIQUID GLASS --- */
 
-/* 1. Add a dynamic gradient background so the glass has something to blur */
-body {
-  background: linear-gradient(135deg, #e8f1d3 0%, #f7f6ee 50%, #dcebd1 100%) !important;
-  background-attachment: fixed !important;
+/* 1. Inputs: Solid white base with 3D glass rim */
+input, select, textarea {
+  background: rgba(255, 255, 255, 0.90) !important; /* Brought the solid color back! */
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  
+  /* The 3D Top Rim Highlight */
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 1), 
+    inset 0 -1px 2px rgba(0, 0, 0, 0.03),
+    0 4px 15px rgba(0, 0, 0, 0.04) !important;
+    
+  color: var(--ink) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
 }
 
-/* 2. The Universal Glass Formula applied to core components */
-header, 
+input:focus, select:focus, textarea:focus {
+  border-color: var(--green) !important;
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 1),
+    0 0 0 3px rgba(47, 116, 94, 0.2) !important;
+  outline: none !important;
+}
+
+/* 2. Buttons: Solid Brand Green + 3D Glass edge */
+.btn {
+  background: rgba(47, 116, 94, 0.92) !important; /* Rich green restored */
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+  
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.5) !important; /* Bright top rim */
+  
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.4), /* Inner 3D glow */
+    0 8px 20px rgba(47, 116, 94, 0.25) !important;
+    
+  border-radius: 12px !important; 
+  color: #ffffff !important;
+}
+
+.btn:hover {
+  background: rgba(47, 116, 94, 1) !important;
+  transform: translateY(-2px);
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.5),
+    0 10px 25px rgba(47, 116, 94, 0.35) !important;
+}
+
+/* 3. Issue Cards & Chatbot: Premium frosted 3D containers */
 .issue, 
-.step, 
-.report-form, 
-.my-issues, 
-.analysis, 
-.community-impact{
-  background: rgba(255, 255, 255, 0.70) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important; /* Safari/iOS support */
-  border: 1px solid rgba(255, 255, 255, 0.7) !important;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
-  border-radius: 16px;
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease !important;
-}
-
-/* 3. Liquid Hover Animations for Cards */
-.issue:hover, .step:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 15px 40px 0 rgba(47, 116, 94, 0.12) !important;
-  background: rgba(255, 255, 255, 0.55) !important;
+.chat-widget, 
+.chat-bubble, 
+.ai-chat-container, 
+.chatbot-button {
+  background: rgba(255, 255, 255, 0.92) !important; /* Mostly solid */
+  backdrop-filter: blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+  
   border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 1) !important; /* 3D light hit */
+  
+  box-shadow: 
+    inset 0 2px 3px rgba(255, 255, 255, 1), /* Inner rim reflection */
+    0 10px 30px rgba(0, 0, 0, 0.06) !important; /* Soft depth */
+    
+  border-radius: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
 }
 
-/* 4. Fix Header Transparency */
-header {
-  background: rgba(251, 250, 245, 0.7) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important;
-}
-
-/* --- FIX: MOBILE MENU OVERLAY TEXT BLEED --- */
-@media (max-width: 850px) {
-  header nav.show {
-    background: rgba(255, 255, 255, 0.95) !important; /* Near solid to block background text */
-    backdrop-filter: blur(25px) !important;
-    -webkit-backdrop-filter: blur(25px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-  }
+.issue:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 
+    inset 0 2px 3px rgba(255, 255, 255, 1),
+    0 15px 35px rgba(35, 77, 59, 0.1) !important;
 }
 
 /* --- APPLE iOS CONTROL CENTER LIQUID GLASS --- */
