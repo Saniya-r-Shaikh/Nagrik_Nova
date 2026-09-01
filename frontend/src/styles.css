@@ -612,3 +612,50 @@ div[class*="chat-header"] {
     padding: 0 18px !important;
   }
 }
+
+/* --- REWARDS PAGE: 3D LIQUID GLASS OVERRIDES --- */
+
+/* 1. The Balance Box (Targeting common wallet/balance wrappers) */
+div[class*="balance"], 
+div[class*="wallet"],
+div[class*="coins"],
+div[class*="reward-box"] {
+  background: rgba(47, 116, 94, 0.85) !important; /* Brand green */
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  
+  border: 1px solid rgba(47, 116, 94, 0.5) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+  
+  box-shadow: 
+    inset 0px 4px 6px rgba(255, 255, 255, 0.3),
+    inset 0px -4px 6px rgba(0, 0, 0, 0.2),
+    0 12px 30px rgba(47, 116, 94, 0.3) !important;
+    
+  border-radius: 20px !important;
+}
+
+/* 2. The Black Redeem Button (Transforming it to dark frosted glass) */
+button[class*="redeem"],
+button[class*="reward-btn"] {
+  background: rgba(24, 41, 55, 0.85) !important; /* Dark ink color */
+  backdrop-filter: blur(15px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+  
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+  
+  box-shadow: 
+    inset 0px 4px 6px rgba(255, 255, 255, 0.2),
+    inset 0px -4px 6px rgba(0, 0, 0, 0.5),
+    0 8px 20px rgba(0, 0, 0, 0.4) !important;
+    
+  border-radius: 12px !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
+}
+
+button[class*="redeem"]:hover {
+  transform: translateY(-2px);
+  background: rgba(24, 41, 55, 0.95) !important;
+}
