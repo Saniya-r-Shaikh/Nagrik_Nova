@@ -1048,36 +1048,36 @@ function Detail({ user }) {
           </p>
         </div>
         
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'nowrap', width: '100%' }}>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'nowrap', width: '100%', justifyContent: 'space-between' }}>
           
-          {/* 1. Analyze with AI */}
+          {/* 1. Analyze */}
           {user.role === "admin" && !issue.analyzed && (
-            <button className="btn analyze" disabled={busy} onClick={analyze} style={{ flex: '1 1 auto', padding: '12px 10px', whiteSpace: 'nowrap' }}>
+            <button className="btn analyze" disabled={busy} onClick={analyze} style={{ flex: 1, padding: '12px 4px', whiteSpace: 'nowrap', fontSize: 'clamp(10px, 2.5vw, 13px)', minWidth: 0, justifyContent: 'center' }}>
               {busy ? (
-                <LoaderCircle className="spin" size={17} />
+                <LoaderCircle className="spin" size={15} />
               ) : (
-                <BrainCircuit size={18} />
-              )}{" "}
-              {busy ? "Analyzing..." : "Analyze with AI"}
+                <BrainCircuit size={15} />
+              )}
+              <span style={{ marginLeft: '4px' }}>{busy ? "Analyzing..." : "Analyze"}</span>
             </button>
           )}
 
-          {/* 2. Delete Report */}
+          {/* 2. Delete */}
           {canModifyIssue && (
-            <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.85)', flex: '1 1 auto', padding: '12px 10px', whiteSpace: 'nowrap' }} onClick={deleteIssue}>
-              🗑️ Delete Report
+            <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.85)', flex: 1, padding: '12px 4px', whiteSpace: 'nowrap', fontSize: 'clamp(10px, 2.5vw, 13px)', minWidth: 0, justifyContent: 'center' }} onClick={deleteIssue}>
+              🗑️ <span style={{ marginLeft: '4px' }}>Delete</span>
             </button>
           )}
 
-          {/* 3. Flag Content */}
+          {/* 3. Flag */}
           {user.role === "admin" && (
             issue.isFlagged ? (
-              <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.5)', flex: '1 1 auto', padding: '12px 10px', whiteSpace: 'nowrap' }} disabled>
-                🚩 Flagged
+              <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.5)', flex: 1, padding: '12px 4px', whiteSpace: 'nowrap', fontSize: 'clamp(10px, 2.5vw, 13px)', minWidth: 0, justifyContent: 'center' }} disabled>
+                🚩 <span style={{ marginLeft: '4px' }}>Flagged</span>
               </button>
             ) : (
-              <button className="btn" style={{ background: 'rgba(201, 81, 71, 0.85)', flex: '1 1 auto', padding: '12px 10px', whiteSpace: 'nowrap' }} disabled={isFlagging} onClick={flagIssue}>
-                {isFlagging ? "Flagging..." : "🚩 Flag Content"}
+              <button className="btn" style={{ background: 'rgba(201, 81, 71, 0.85)', flex: 1, padding: '12px 4px', whiteSpace: 'nowrap', fontSize: 'clamp(10px, 2.5vw, 13px)', minWidth: 0, justifyContent: 'center' }} disabled={isFlagging} onClick={flagIssue}>
+                {isFlagging ? "Flagging..." : "🚩 Flag"}
               </button>
             )
           )}

@@ -659,3 +659,37 @@ button[class*="redeem"]:hover {
   transform: translateY(-2px);
   background: rgba(24, 41, 55, 0.95) !important;
 }
+
+/* --- IMMERSIVE VR BUTTON: 3D LIQUID GLASS OVERRIDE --- */
+button[class*="vr"], 
+button[class*="immersive"],
+button[class*="launch"] {
+  background: rgba(0, 194, 255, 0.4) !important; /* Glowing cyan base */
+  backdrop-filter: blur(25px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
+  
+  /* Thick 3D Edges */
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.9) !important;
+  
+  /* Inner glass reflections */
+  box-shadow: 
+    inset 0px 4px 8px rgba(255, 255, 255, 0.5),
+    inset 0px -4px 8px rgba(0, 0, 0, 0.1),
+    0 12px 30px rgba(0, 194, 255, 0.3) !important;
+    
+  border-radius: 20px !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+  font-weight: 800 !important;
+  transition: all 0.3s ease !important;
+}
+
+button[class*="vr"]:hover, 
+button[class*="immersive"]:hover {
+  background: rgba(0, 194, 255, 0.6) !important;
+  transform: translateY(-2px);
+  box-shadow: 
+    inset 0px 6px 10px rgba(255, 255, 255, 0.6),
+    0 15px 35px rgba(0, 194, 255, 0.4) !important;
+}
