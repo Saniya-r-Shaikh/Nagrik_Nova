@@ -69,29 +69,39 @@ export default function Rewards({ user }) {
           <p>Use the coins you earned from reporting issues to claim rewards.</p>
         </div>
         
-        <div style={{ backgroundColor: '#059669', color: 'white', padding: '15px 25px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 10px 25px rgba(5, 150, 105, 0.3)' }}>
-          <Coins size={28} />
-          <div>
-            <div style={{ fontSize: '12px', opacity: 0.9 }}>Available Balance</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{loading ? '...' : balance} Nova Coins</div>
+        {/* THE FIX: Replaced solid inline styles with the chat-bubble class for 3D green glass */}
+        <div className="chat-bubble" style={{ padding: '15px 25px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <Coins size={32} color="#fff" />
+          <div style={{ color: '#fff' }}>
+            <div style={{ fontSize: '12px', opacity: 0.9, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Available Balance</div>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{loading ? '...' : balance} Nova Coins</div>
           </div>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '30px' }}>
         {mockProducts.map((item) => (
-          <div key={item.id} style={{ border: '1px solid #eaeaea', borderRadius: '12px', padding: '20px', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', gap: '15px', transition: 'transform 0.2s' }} className="reward-card">
-            <div style={{ fontSize: '40px', textAlign: 'center', padding: '20px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+          /* THE FIX: Added "issue" class to make the cards frosted 3D glass */
+          <div key={item.id} className="issue" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', minHeight: 'auto' }}>
+            <div style={{ fontSize: '40px', textAlign: 'center', padding: '20px', background: 'rgba(255, 255, 255, 0.4)', borderRadius: '12px', boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.02)' }}>
               {item.icon}
             </div>
             <h3 style={{ margin: 0, fontSize: '18px' }}>{item.name}</h3>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-              <span style={{ fontWeight: 'bold', color: '#059669', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ fontWeight: 'bold', color: 'var(--green)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <Sparkles size={16}/> {item.price} Coins
               </span>
+              
+              {/* THE FIX: Replaced solid styles with "btn small" class */}
               <button 
+                className="btn small"
                 onClick={() => handleRedeem(item)}
-                style={{ backgroundColor: balance >= item.price ? '#111' : '#e5e7eb', color: balance >= item.price ? '#fff' : '#9ca3af', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: balance >= item.price ? 'pointer' : 'not-allowed', fontWeight: 'bold' }}
+                disabled={balance < item.price}
+                style={{ 
+                  cursor: balance >= item.price ? 'pointer' : 'not-allowed',
+                  opacity: balance >= item.price ? 1 : 0.5,
+                  padding: '8px 16px'
+                }}
               >
                 Redeem
               </button>
@@ -100,21 +110,21 @@ export default function Rewards({ user }) {
         ))}
       </div>
 
-      {/* --- NEW: YOUR ORDERS SECTION --- */}
       {orders.length > 0 && (
-        <div style={{ marginTop: '50px', borderTop: '1px solid #eaeaea', paddingTop: '30px' }}>
+        <div style={{ marginTop: '50px', borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: '30px' }}>
           <h2><Package size={22} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px' }}/> Your Orders</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
             {orders.map((order) => (
-              <div key={order.orderId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 20px', backgroundColor: '#f9fafb', borderRadius: '10px', border: '1px solid #e5e7eb' }}>
+              /* THE FIX: Added "issue" class here too for glass order panels */
+              <div key={order.orderId} className="issue" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 20px', minHeight: 'auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                   <span style={{ fontSize: '24px' }}>{order.icon}</span>
                   <div>
                     <h4 style={{ margin: 0 }}>{order.name}</h4>
-                    <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>Order ID: {order.orderId} • Placed on {order.date}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>Order ID: {order.orderId} • Placed on {order.date}</div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#d97706', fontWeight: 'bold', fontSize: '14px', backgroundColor: '#fef3c7', padding: '6px 12px', borderRadius: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#d97706', fontWeight: 'bold', fontSize: '14px', background: 'rgba(254, 243, 199, 0.7)', padding: '6px 12px', borderRadius: '20px', backdropFilter: 'blur(5px)' }}>
                   <Clock size={14} /> {order.status}
                 </div>
               </div>
