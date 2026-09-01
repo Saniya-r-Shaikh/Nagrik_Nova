@@ -235,6 +235,7 @@ app.post('/messages', async (req, res) => res.json(await new Message(req.body).s
 app.get('/messages', async (req, res) => res.json(await Message.find()));
 
 // --- AI ANALYSIS ROUTE (Dashboard button) ---
+// --- AI ANALYSIS ROUTE (Dashboard button) ---
 app.post('/api/issues/:id/analyze', async (req, res) => {
   try {
     const { id } = req.params;
@@ -248,9 +249,10 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
 
+    // THE FIX: We updated the prompt to demand real Indian organizations!
     const prompt = `
       You are an expert civic planning AI for a platform called Nagrik Nova.
-      Analyze this community issue:
+      Analyze this community issue located in India:
       Title: "${ticket.title}"
       Description: "${ticket.description}"
       Location: "${ticket.location}"
@@ -261,6 +263,9 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
       - "priority": Strictly one of ["High", "Medium", "Low"]
       - "requiredExpertise": An array of 2-3 specific skills needed (e.g., ["Civil Engineering", "Data Analytics"])
       - "solutionIdea": A concise, 2-sentence actionable solution pathway.
+      - "matchedOrganizations": An array of 2 to 3 REAL-WORLD Indian organizations (NGOs, Universities, or Industries) that actually exist and specialize in solving this exact type of problem. 
+        Format each object in the array exactly like this:
+        {"role": "ngo" (or "university" or "industry"), "name": "Actual Real-World Organization Name", "expertise": ["Their specific relevant skill"]}
     `;
 
     const result = await model.generateContent(prompt);
@@ -274,14 +279,17 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
     ticket.requiredExpertise = aiData.requiredExpertise;
     ticket.solutionIdea = aiData.solutionIdea;
     
-    ticket.matchedOrganizations = [
-      {
-        userId: "org-1",
-        role: "university",
-        name: "Siddhant College of Engineering", 
-        expertise: aiData.requiredExpertise 
-      }
-    ];
+    // THE FIX: We map the AI's dynamic real-world organizations directly into the ticket!
+    if (aiData.matchedOrganizations && Array.isArray(aiData.matchedOrganizations)) {
+      ticket.matchedOrganizations = aiData.matchedOrganizations.map((org, index) => ({
+        userId: `org-ai-${index}-${Date.now()}`, // Temporary ID for the UI key mapping
+        role: org.role.toLowerCase(),
+        name: org.name,
+        expertise: org.expertise || aiData.requiredExpertise
+      }));
+    } else {
+      ticket.matchedOrganizations = [];
+    }
 
     // --- COIN REWARD LOGIC ---
     let coinReward = 10; 
