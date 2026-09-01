@@ -656,8 +656,10 @@ function Dashboard({ user }) {
   const nav = useNavigate(),
     [issues, setIssues] = useState([]);
   
-  const [data, setData] = useState({ title: "", description: "", state: "", city: "", location: "" });
+  // State for form data and image upload
+  const [data, setData] = useState({ title: "", description: "", state: "", city: "", location: "", imageUrl: "" });
   const [imagePreview, setImagePreview] = useState(null);
+  
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [locationAttached, setLocationAttached] = useState(null); 
@@ -674,7 +676,27 @@ function Dashboard({ user }) {
         ),
       );
   }, [user.id]);
-  
+
+  // Handle image upload and conversion
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Check file size (limit to ~4MB to prevent Base64 lag)
+    if (file.size > 4000000) {
+      alert("Image is too large! Please choose a smaller photo.");
+      return;
+    }
+
+    try {
+      const base64 = await convertToBase64(file);
+      setData({ ...data, imageUrl: base64 });
+      setImagePreview(base64);
+    } catch (error) {
+      console.error("Error converting image:", error);
+      alert("Failed to process the image.");
+    }
+  };
 
   const post = async (e) => {
     e.preventDefault();
@@ -691,7 +713,10 @@ function Dashboard({ user }) {
         submitterRole: user.role
       });
       setIssues([r.data, ...issues]);
-      setData({ title: "", description: "", state: "", city: "", location: "" });
+      
+      // Reset form
+      setData({ title: "", description: "", state: "", city: "", location: "", imageUrl: "" });
+      setImagePreview(null);
       setLocationAttached(null);
       setMsg("Your issue is now visible to the Nagrik Nova network.");
     } catch (e) {
@@ -739,8 +764,9 @@ function Dashboard({ user }) {
               }
             />
           </label>
-        
-        <label>
+
+          {/* NEW IMAGE UPLOAD SECTION */}
+          <label>
             Attach a photo (Optional)
             <input 
               type="file" 
@@ -752,6 +778,7 @@ function Dashboard({ user }) {
           {imagePreview && (
             <img src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '8px', marginTop: '10px' }} />
           )}
+        
           <div className="two">
             <label>
               State
@@ -818,7 +845,6 @@ function Dashboard({ user }) {
         </form>
 
         <aside className="my-issues">
-          {/* THE FIX: The Referral Box is now OUTSIDE the h2 tag */}
           <div style={{ padding: '20px', background: '#fef3c7', borderRadius: '12px', marginBottom: '25px', border: '1px solid #fde68a' }}>
             <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#92400e', fontSize: '18px' }}>
               <Sparkles size={18} color="#d97706" /> Earn 50 Coins!
@@ -838,7 +864,6 @@ function Dashboard({ user }) {
               Copy Referral Link
             </button>
           </div>
-          {/* ------------------------------------ */}
           
           <h2>
             Your reports <span>{issues.length}</span>
