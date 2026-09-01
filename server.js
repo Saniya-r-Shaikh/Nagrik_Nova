@@ -166,9 +166,20 @@ app.get('/api/issues', async (req, res) => {
 
 app.post('/api/issues', async (req, res) => {
   try {
-    // THE FIX: Now accepts imageUrl from the frontend!
     const { title, description, location, submittedBy, submitterRole, imageUrl } = req.body; 
     console.log("NEW TICKET SUBMITTED:", title);
+
+    // --- NEW MODERATION CHECK: 3 STRIKES RULE ---
+    if (submittedBy && submittedBy !== 'anonymous') {
+      const postingUser = await User.findById(submittedBy);
+      if (postingUser && postingUser.flagCount >= 3) {
+        console.log(`🚫 Blocked banned user ${submittedBy} from posting.`);
+        return res.status(403).json({ 
+          message: 'Your account has been restricted from posting due to multiple community guidelines violations.' 
+        });
+      }
+    }
+    // ---------------------------------------------
 
     const newTicket = await new Ticket({ 
       title, 
