@@ -13,7 +13,8 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.log('❌ DB Error:', err.message));
 
 // --- MODELS (6 Collections) ---
-const User = mongoose.model('User', new mongoose.Schema({ username: String, password: String, role: String, coins: { type: Number, default: 0 } }));
+// Add flagCount to User
+const User = mongoose.model('User', new mongoose.Schema({ username: String, password: String, role: String, coins: { type: Number, default: 0 }, flagCount: { type: Number, default: 0 } }));
 
 // THE FIX: Added imageUrl and comments to the Ticket (Issue) Schema!
 const Ticket = mongoose.model('Ticket', new mongoose.Schema({ 
@@ -33,6 +34,7 @@ const Ticket = mongoose.model('Ticket', new mongoose.Schema({
   matchedOrganizations: Array,
   // --- NEW PHASE 1 SOCIAL FEATURES ---
   imageUrl: { type: String, default: "" },
+  isFlagged: { type: Boolean, default: false }, // NEW FIELD
   comments: [{
     text: String,
     postedBy: String,
@@ -236,6 +238,29 @@ app.get('/messages', async (req, res) => res.json(await Message.find()));
 
 // --- AI ANALYSIS ROUTE (Dashboard button) ---
 // --- AI ANALYSIS ROUTE (Dashboard button) ---
+// --- ADMIN FLAG ROUTE ---
+app.post('/api/issues/:id/flag', async (req, res) => {
+  try {
+    const issue = await Ticket.findById(req.params.id);
+    if (!issue) return res.status(404).json({ message: 'Issue not found' });
+
+    // Mark the issue as flagged
+    issue.isFlagged = true;
+    await issue.save();
+
+    // Add a strike to the user's account if they aren't anonymous
+    if (issue.submittedBy && issue.submittedBy !== 'anonymous') {
+      await User.findByIdAndUpdate(issue.submittedBy, { $inc: { flagCount: 1 } });
+      console.log(`🚩 User ${issue.submittedBy} received a moderation strike.`);
+    }
+
+    res.json(issue);
+  } catch (error) {
+    console.error("CRASH IN FLAG ROUTE:", error);
+    res.status(500).json({ message: 'Failed to flag issue' });
+  }
+});
+
 app.post('/api/issues/:id/analyze', async (req, res) => {
   try {
     const { id } = req.params;

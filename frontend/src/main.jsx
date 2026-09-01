@@ -991,7 +991,21 @@ function Detail({ user }) {
       setIsSubmittingComment(false);
     }
   };
+  const [isFlagging, setIsFlagging] = useState(false);
 
+  const flagIssue = async () => {
+    if (!window.confirm("Are you sure you want to flag this issue? This will penalize the user.")) return;
+    setIsFlagging(true);
+    try {
+      const r = await api.post(`/issues/${id}/flag`);
+      setIssue(r.data);
+    } catch (e) {
+      alert("Failed to flag issue.");
+    } finally {
+      setIsFlagging(false);
+    }
+  };
+  
   if (err && !issue)
     return (
       <section className="page">
@@ -1023,15 +1037,32 @@ function Detail({ user }) {
             {issue.location} 
           </p>
         </div>
-        {user.role === "admin" && !issue.analyzed && (
-          <button className="btn analyze" disabled={busy} onClick={analyze}>
-            {busy ? (
-              <LoaderCircle className="spin" size={17} />
+        
+        {user.role === "admin" && (
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {/* The Flag Button */}
+            {issue.isFlagged ? (
+              <button className="btn" style={{ background: '#a23d36' }} disabled>
+                🚩 Flagged
+              </button>
             ) : (
-              <BrainCircuit size={18} />
-            )}{" "}
-            {busy ? "Analyzing signal…" : "Analyze with AI"}
-          </button>
+              <button className="btn" style={{ background: '#c95147' }} disabled={isFlagging} onClick={flagIssue}>
+                {isFlagging ? "Flagging..." : "🚩 Flag Content"}
+              </button>
+            )}
+            
+            {/* The Analyze Button */}
+            {!issue.analyzed && (
+              <button className="btn analyze" disabled={busy} onClick={analyze}>
+                {busy ? (
+                  <LoaderCircle className="spin" size={17} />
+                ) : (
+                  <BrainCircuit size={18} />
+                )}{" "}
+                {busy ? "Analyzing signal…" : "Analyze with AI"}
+              </button>
+            )}
+          </div>
         )}
       </div>
 
