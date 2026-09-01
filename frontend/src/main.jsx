@@ -1048,11 +1048,11 @@ function Detail({ user }) {
           </p>
         </div>
         
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: '10px' }}>
           
           {/* 1. Analyze with AI */}
           {user.role === "admin" && !issue.analyzed && (
-            <button className="btn analyze" disabled={busy} onClick={analyze}>
+            <button className="btn analyze" disabled={busy} onClick={analyze} style={{ flexShrink: 0 }}>
               {busy ? (
                 <LoaderCircle className="spin" size={17} />
               ) : (
@@ -1064,7 +1064,7 @@ function Detail({ user }) {
 
           {/* 2. Delete Report */}
           {canModifyIssue && (
-            <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.85)' }} onClick={deleteIssue}>
+            <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.85)', flexShrink: 0 }} onClick={deleteIssue}>
               🗑️ Delete Report
             </button>
           )}
@@ -1072,18 +1072,18 @@ function Detail({ user }) {
           {/* 3. Flag Content */}
           {user.role === "admin" && (
             issue.isFlagged ? (
-              <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.5)' }} disabled>
+              <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.5)', flexShrink: 0 }} disabled>
                 🚩 Flagged
               </button>
             ) : (
-              <button className="btn" style={{ background: 'rgba(201, 81, 71, 0.85)' }} disabled={isFlagging} onClick={flagIssue}>
+              <button className="btn" style={{ background: 'rgba(201, 81, 71, 0.85)', flexShrink: 0 }} disabled={isFlagging} onClick={flagIssue}>
                 {isFlagging ? "Flagging..." : "🚩 Flag Content"}
               </button>
             )
           )}
 
         </div>
-      </div>
+        </div>
 
       <IssueTracker issue={issue} />
 
