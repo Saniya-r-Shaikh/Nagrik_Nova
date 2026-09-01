@@ -1,12 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap');
-:root{--ink:#182937;--muted:#63737d;--cream:#f7f6ee;--paper:#fffefa;--green:#2f745e;--lime:#d5eb83;--blue:#286d91;--line:#dde4dc;--orange:#e59b4b}*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:15px Manrope,Arial,sans-serif}a{text-decoration:none;color:inherit}header{height:82px;display:flex;align-items:center;justify-content:space-between;padding:0 max(5vw,32px);background:#fbfaf5;border-bottom:1px solid rgba(24,41,55,.07);position:sticky;z-index:10;top:0}.brand{display:flex;gap:9px;align-items:center;font-size:20px;font-weight:800;letter-spacing:-1px}.brand i,h1 em,h2 em{font-family:'Playfair Display';font-weight:600}.brand-mark{width:32px;height:32px;border-radius:50% 50% 50% 4px;background:var(--lime);display:grid;place-items:center;color:#235a4a;transform:rotate(-16deg)}nav{display:flex;align-items:center;gap:27px;font-weight:700;font-size:13px}nav a:not(.btn){color:#4b5c64}.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:0;background:var(--green);color:#fff!important;padding:14px 21px;border-radius:8px;font:700 13px Manrope;cursor:pointer;box-shadow:0 8px 18px rgba(47,116,94,.16);transition:.25s}.btn:hover{transform:translateY(-2px);background:#25634f}.btn.small{padding:11px 15px}.text-btn{border:0;background:none;font:700 13px Manrope;cursor:pointer;color:var(--muted)}.user-dot{width:31px;height:31px;display:grid;place-items:center;background:#d7e8e0;color:var(--green);border-radius:50%;font-size:10px}.menu{display:none;border:0;background:none}.hero{max-width:1240px;min-height:560px;margin:auto;padding:75px 5vw 50px;display:grid;grid-template-columns:1.04fr .96fr;gap:30px;align-items:center;overflow:hidden}.eyebrow{color:var(--green);font:700 11px 'DM Mono';letter-spacing:.3px;text-transform:uppercase;display:flex;align-items:center;gap:7px}.hero h1,.page h1{font-size:clamp(40px,5vw,68px);line-height:1.08;letter-spacing:-3px;max-width:680px;margin:18px 0}.hero h1 em,.page h1 em,.how h2 em,.analysis h2 em{color:var(--green)}.hero-copy>p{max-width:530px;color:var(--muted);font-size:16px;line-height:1.8}.hero-actions{display:flex;align-items:center;gap:25px;margin:30px 0}.link-action{font-weight:800;font-size:13px;display:flex;gap:3px;align-items:center}.trust{display:flex;gap:18px;font-size:11px;font-weight:700;color:#56656d}.trust span{display:flex;align-items:center;gap:5px}.trust svg{color:var(--green);width:15px}.hero-art{height:430px;position:relative;background:#e6efd2;border-radius:50% 50% 45px 45px;overflow:hidden}.sun{position:absolute;width:270px;height:270px;border-radius:50%;background:#f2cc75;right:16%;top:27px}.orb{position:absolute;border-radius:50%;border:1px solid rgba(47,116,94,.2)}.orb-one{width:380px;height:380px;left:8%;top:32px}.orb-two{width:470px;height:470px;left:-3%;top:-14px}.city{position:absolute;bottom:0;width:100%;height:125px;background:#d1e1a7;clip-path:polygon(0 32%,8% 26%,8% 52%,19% 52%,19% 7%,30% 7%,30% 40%,40% 40%,40% 15%,55% 15%,55% 60%,65% 60%,65% 25%,79% 25%,79% 45%,88% 45%,88% 10%,100% 10%,100% 100%,0 100%)}.issue-card,.match-card{position:absolute;background:rgba(255,255,252,.93);box-shadow:0 18px 35px rgba(35,77,59,.15);border-radius:12px;padding:15px;display:flex;gap:11px;align-items:center}.issue-card{width:280px;left:8%;top:154px}.match-card{right:8%;bottom:54px}.issue-card small,.match-card small{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}.issue-card strong,.match-card strong{font-size:12px;display:block}.issue-card span{font-size:10px;color:var(--muted)}.icon-box{width:39px;height:39px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto}.icon-box.blue{background:#dcedf3;color:var(--blue)}.icon-box.green{background:#dcebd1;color:var(--green)}.float{animation:float 4s ease-in-out infinite}@keyframes float{50%{transform:translateY(-10px)}}.impact-strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fdfcf7;display:grid;grid-template-columns:repeat(4,1fr);padding:22px 5vw}.impact-strip div{display:flex;align-items:center;justify-content:center;gap:11px;border-right:1px solid var(--line);font-size:11px;font-weight:700;color:var(--muted)}.impact-strip div:last-child{border:0}.impact-strip strong{font:500 19px 'DM Mono';color:var(--green)}.how{max-width:1240px;padding:100px 5vw;margin:auto;display:grid;grid-template-columns:.85fr 1.5fr;gap:70px}.how h2{font-size:40px;letter-spacing:-2px;line-height:1.22}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.step{background:var(--paper);padding:23px;border:1px solid #e5e8df;border-radius:12px;transition:.3s}.step:hover{transform:translateY(-6px);box-shadow:0 15px 30px rgba(30,58,45,.08)}.step-top{display:flex;justify-content:space-between;color:var(--green)}.step-top span{font:500 11px 'DM Mono';color:var(--muted)}.step h3{font-size:15px;margin:32px 0 9px}.step p{font-size:12px;line-height:1.7;color:var(--muted)}
+:root{--ink:#182937;--muted:#63737d;--cream:#f7f6ee;--paper:#fffefa;--green:#2f745e;--lime:#d5eb83;--blue:#286d91;--line:#dde4dc;--orange:#e59b4b}*{box-sizing:border-box}
+
+/* --- FIX 1: DYNAMIC BACKGROUND FOR LIGHT REFRACTION --- */
+body{margin:0;background: linear-gradient(135deg, #e8f1d3 0%, #f7f6ee 30%, #d7e8e0 70%, #a2c2b3 100%) !important; background-attachment: fixed !important; color:var(--ink);font:15px Manrope,Arial,sans-serif}
+
+a{text-decoration:none;color:inherit}header{height:82px;display:flex;align-items:center;justify-content:space-between;padding:0 max(5vw,32px);background:#fbfaf5;border-bottom:1px solid rgba(24,41,55,.07);position:sticky;z-index:10;top:0}.brand{display:flex;gap:9px;align-items:center;font-size:20px;font-weight:800;letter-spacing:-1px}.brand i,h1 em,h2 em{font-family:'Playfair Display';font-weight:600}.brand-mark{width:32px;height:32px;border-radius:50% 50% 50% 4px;background:var(--lime);display:grid;place-items:center;color:#235a4a;transform:rotate(-16deg)}nav{display:flex;align-items:center;gap:27px;font-weight:700;font-size:13px}nav a:not(.btn){color:#4b5c64}.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:0;background:var(--green);color:#fff!important;padding:14px 21px;border-radius:8px;font:700 13px Manrope;cursor:pointer;box-shadow:0 8px 18px rgba(47,116,94,.16);transition:.25s}.btn:hover{transform:translateY(-2px);background:#25634f}.btn.small{padding:11px 15px}.text-btn{border:0;background:none;font:700 13px Manrope;cursor:pointer;color:var(--muted)}.user-dot{width:31px;height:31px;display:grid;place-items:center;background:#d7e8e0;color:var(--green);border-radius:50%;font-size:10px}.menu{display:none;border:0;background:none}.hero{max-width:1240px;min-height:560px;margin:auto;padding:75px 5vw 50px;display:grid;grid-template-columns:1.04fr .96fr;gap:30px;align-items:center;overflow:hidden}.eyebrow{color:var(--green);font:700 11px 'DM Mono';letter-spacing:.3px;text-transform:uppercase;display:flex;align-items:center;gap:7px}.hero h1,.page h1{font-size:clamp(40px,5vw,68px);line-height:1.08;letter-spacing:-3px;max-width:680px;margin:18px 0}.hero h1 em,.page h1 em,.how h2 em,.analysis h2 em{color:var(--green)}.hero-copy>p{max-width:530px;color:var(--muted);font-size:16px;line-height:1.8}.hero-actions{display:flex;align-items:center;gap:25px;margin:30px 0}.link-action{font-weight:800;font-size:13px;display:flex;gap:3px;align-items:center}.trust{display:flex;gap:18px;font-size:11px;font-weight:700;color:#56656d}.trust span{display:flex;align-items:center;gap:5px}.trust svg{color:var(--green);width:15px}.hero-art{height:430px;position:relative;background:#e6efd2;border-radius:50% 50% 45px 45px;overflow:hidden}.sun{position:absolute;width:270px;height:270px;border-radius:50%;background:#f2cc75;right:16%;top:27px}.orb{position:absolute;border-radius:50%;border:1px solid rgba(47,116,94,.2)}.orb-one{width:380px;height:380px;left:8%;top:32px}.orb-two{width:470px;height:470px;left:-3%;top:-14px}.city{position:absolute;bottom:0;width:100%;height:125px;background:#d1e1a7;clip-path:polygon(0 32%,8% 26%,8% 52%,19% 52%,19% 7%,30% 7%,30% 40%,40% 40%,40% 15%,55% 15%,55% 60%,65% 60%,65% 25%,79% 25%,79% 45%,88% 45%,88% 10%,100% 10%,100% 100%,0 100%)}.issue-card,.match-card{position:absolute;background:rgba(255,255,252,.93);box-shadow:0 18px 35px rgba(35,77,59,.15);border-radius:12px;padding:15px;display:flex;gap:11px;align-items:center}.issue-card{width:280px;left:8%;top:154px}.match-card{right:8%;bottom:54px}.issue-card small,.match-card small{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}.issue-card strong,.match-card strong{font-size:12px;display:block}.issue-card span{font-size:10px;color:var(--muted)}.icon-box{width:39px;height:39px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto}.icon-box.blue{background:#dcedf3;color:var(--blue)}.icon-box.green{background:#dcebd1;color:var(--green)}.float{animation:float 4s ease-in-out infinite}@keyframes float{50%{transform:translateY(-10px)}}.impact-strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fdfcf7;display:grid;grid-template-columns:repeat(4,1fr);padding:22px 5vw}.impact-strip div{display:flex;align-items:center;justify-content:center;gap:11px;border-right:1px solid var(--line);font-size:11px;font-weight:700;color:var(--muted)}.impact-strip div:last-child{border:0}.impact-strip strong{font:500 19px 'DM Mono';color:var(--green)}.how{max-width:1240px;padding:100px 5vw;margin:auto;display:grid;grid-template-columns:.85fr 1.5fr;gap:70px}.how h2{font-size:40px;letter-spacing:-2px;line-height:1.22}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.step{background:var(--paper);padding:23px;border:1px solid #e5e8df;border-radius:12px;transition:.3s}.step:hover{transform:translateY(-6px);box-shadow:0 15px 30px rgba(30,58,45,.08)}.step-top{display:flex;justify-content:space-between;color:var(--green)}.step-top span{font:500 11px 'DM Mono';color:var(--muted)}.step h3{font-size:15px;margin:32px 0 9px}.step p{font-size:12px;line-height:1.7;color:var(--muted)}
 .auth-shell{min-height:calc(100vh - 82px);display:grid;grid-template-columns:.85fr 1.15fr}.auth-side{background:#e2edd1;padding:11vw max(5vw,36px);position:relative;overflow:hidden}.auth-side:after{content:'';position:absolute;width:470px;height:470px;border:1px solid #b6d28e;border-radius:50%;bottom:-200px;right:-150px}.auth-side h2{max-width:450px;font-size:48px;line-height:1.1;letter-spacing:-2px}.auth-side h2 em{color:var(--green)}.auth-side p{max-width:430px;color:#526760;line-height:1.8}.quote{border-left:2px solid var(--green);padding:12px 17px;margin-top:45px;max-width:370px;color:#355c50;font:600 15px 'Playfair Display';line-height:1.5}.form-panel{max-width:620px;width:100%;margin:auto;padding:64px 10%}.form-panel h1{font-size:38px;letter-spacing:-1.8px;margin:0}.form-panel>p{color:var(--muted);margin:9px 0 28px}.form-panel form{display:grid;gap:15px}label{font-weight:700;font-size:12px;display:grid;gap:7px;color:#3b4b51}input,select,textarea{width:100%;border:1px solid #dce3da;border-radius:7px;background:#fff;padding:12px 13px;font:500 13px Manrope;color:var(--ink);outline:0;transition:.2s}input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(47,116,94,.1)}textarea{height:115px;resize:vertical}.two{display:grid;grid-template-columns:1fr 1fr;gap:13px}.full{width:100%;margin-top:4px}.form-foot{text-align:center!important;font-size:12px}.form-foot a{color:var(--green);font-weight:800}.error,.success{border-radius:7px;padding:11px 12px;font-size:12px;font-weight:700}.error{color:#a23d36;background:#fce9e5}.success{color:#28624e;background:#e3f2df}.page{max-width:1240px;margin:auto;padding:64px 5vw 100px}.page-head{display:flex;align-items:end;justify-content:space-between;gap:25px;margin-bottom:37px}.page h1{font-size:48px;margin:12px 0}.page-head p{color:var(--muted);margin:0}.issue-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.issue{display:flex;flex-direction:column;background:var(--paper);border:1px solid #e1e6df;border-radius:12px;padding:21px;min-height:240px;transition:.25s}.issue:hover{transform:translateY(-4px);box-shadow:0 15px 27px rgba(27,53,39,.09);border-color:#c7d6c5}.issue-meta{display:flex;gap:7px;align-items:center}.role,.priority,.pending{font:500 10px 'DM Mono';text-transform:uppercase;letter-spacing:.3px;padding:5px 7px;border-radius:4px}.role{color:#356e61;background:#e1eee7}.priority.high{background:#fbe6de;color:#a54c39}.priority.medium{background:#f9edcf;color:#90651e}.priority.low{background:#e2edf4;color:#397291}.pending{color:#747873;background:#f0f0eb}.issue h3{font-size:17px;line-height:1.35;margin:18px 0 9px}.issue>p{font-size:12px;line-height:1.65;color:var(--muted);margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.issue-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:20px;color:var(--muted);font-size:11px;font-weight:700}.issue-bottom>span:first-child{display:flex;gap:5px;align-items:center}.arrow-circle{width:29px;height:29px;border-radius:50%;background:#e5efdc;color:var(--green);display:grid;place-items:center}.loading,.empty{min-height:180px;display:grid;place-items:center;text-align:center;color:var(--muted);gap:9px;font-size:13px}.empty svg{color:var(--green);width:28px;height:28px}.spin{animation:spin .9s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 
 /* --- FIX: DASHBOARD SPACING & OVERLAPS (DESKTOP) --- */
 .dash-grid {
   display: grid;
-  grid-template-columns: 380px 1fr; /* Locks the left panel, forces the right panel to take the rest */
-  gap: 50px; /* Massive, uncrossable gap between the referral box and your reports */
+  grid-template-columns: 380px 1fr; 
+  gap: 50px; 
   align-items: start;
 }
 
@@ -18,146 +23,95 @@
 .quiet-art{background:radial-gradient(circle at 50% 43%,#f7fbec 0 14%,transparent 14.2%),linear-gradient(145deg,#e8f2d7,#d5ebca);display:block}.quiet-art>*{position:absolute}.constellation-lines{inset:14% 12%;border-radius:50%;background:conic-gradient(from 30deg,transparent 0 18%,rgba(48,116,94,.3) 18.4% 18.7%,transparent 19% 47%,rgba(48,116,94,.3) 47.4% 47.7%,transparent 48% 80%,rgba(48,116,94,.3) 80.4% 80.7%,transparent 81%);mask:radial-gradient(circle,transparent 0 25%,#000 25.4% 26.3%,transparent 26.7%);animation:turn 22s linear infinite}.constellation-lines:after{content:'';position:absolute;inset:8%;border:1px dashed rgba(48,116,94,.25);border-radius:50%}.constellation-core{z-index:3;left:50%;top:48%;transform:translate(-50%,-50%);width:132px;height:132px;border-radius:50%;background:#fffdf7;box-shadow:0 16px 35px rgba(38,91,64,.18),0 0 0 13px rgba(255,255,255,.36);display:grid;place-content:center;text-align:center;gap:6px;color:#2f745e;animation:corePulse 3.6s ease-in-out infinite}.constellation-core svg{margin:auto}.constellation-core span{font:700 10px 'DM Mono';text-transform:uppercase;letter-spacing:.3px}.constellation-node{z-index:4;width:48px;height:48px;border-radius:50%;background:#2f745e;box-shadow:0 0 0 8px rgba(255,255,255,.38);display:grid;place-items:center;animation:nodeFloat 4s ease-in-out infinite}.constellation-node span{width:14px;height:14px;border-radius:50%;background:#d9ec83;box-shadow:0 -10px 0 -3px #d9ec83}.node-a{top:19%;left:18%}.node-b{right:18%;top:28%;background:#286d91;animation-delay:-1.2s}.node-b span{background:#d9edf3;box-shadow:0 -10px 0 -3px #d9edf3}.node-c{bottom:18%;left:26%;background:#e59b4b;animation-delay:-2.1s}.node-c span{background:#fff3cb;box-shadow:0 -10px 0 -3px #fff3cb}.constellation-label{z-index:5;color:#376a58;background:rgba(255,255,250,.8);padding:6px 9px;border-radius:5px;font:600 9px 'DM Mono';text-transform:uppercase;letter-spacing:.25px}.label-a{top:17%;left:31%}.label-b{right:10%;top:43%}.label-c{left:17%;bottom:17%}.constellation-caption{z-index:5;bottom:23px;right:27px;color:#36725d;display:flex;gap:7px;align-items:center;font:500 10px 'DM Mono';text-transform:uppercase;letter-spacing:.2px}@keyframes turn{to{transform:rotate(360deg)}}@keyframes corePulse{50%{transform:translate(-50%,-50%) scale(1.06);box-shadow:0 18px 38px rgba(38,91,64,.2),0 0 0 22px rgba(255,255,255,.2)}}@keyframes nodeFloat{50%{transform:translateY(-10px)}}
 @media(max-width:760px){.constellation-core{transform:translate(-50%,-50%) scale(.72)}.constellation-node{transform:scale(.72)}.node-a{left:13%;top:18%}.node-b{right:11%;top:25%}.node-c{left:18%;bottom:22%}.constellation-label{font-size:7px;padding:5px}.label-a{left:29%;top:17%}.label-b{right:5%;top:42%}.label-c{left:14%;bottom:16%}.constellation-caption{bottom:15px;right:15px;font-size:7px}.constellation-lines{inset:8%}.constellation-core{animation:corePulseMobile 3.6s ease-in-out infinite}@keyframes corePulseMobile{50%{transform:translate(-50%,-50%) scale(.78)}}}
 
-/* --- V3: ORIGINAL COLORS + 3D LIQUID GLASS --- */
+/* --- THE ULTIMATE 3D LIQUID GLASS ENGINE --- */
 
-/* 1. Inputs: Solid white base with 3D glass rim */
-input, select, textarea {
-  background: rgba(255, 255, 255, 0.90) !important; /* Brought the solid color back! */
-  backdrop-filter: blur(25px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+/* 1. Main Panels (Cards, Forms, Chatbot, Dashboard) */
+.issue, 
+.report-form, 
+.my-issues, 
+.analysis, 
+.community-impact, 
+.chat-widget, 
+.chat-bubble, 
+.ai-chat-container, 
+.step {
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
   
-  /* The 3D Top Rim Highlight */
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-top: 2px solid rgba(255, 255, 255, 1) !important; 
+  border-left: 1.5px solid rgba(255, 255, 255, 0.8) !important; 
+  
   box-shadow: 
-    inset 0 2px 4px rgba(255, 255, 255, 1), 
-    inset 0 -1px 2px rgba(0, 0, 0, 0.03),
-    0 4px 15px rgba(0, 0, 0, 0.04) !important;
+    inset -5px -5px 15px rgba(0, 0, 0, 0.03), 
+    inset 5px 5px 15px rgba(255, 255, 255, 0.8), 
+    0 15px 35px rgba(35, 77, 59, 0.1) !important; 
     
+  border-radius: 20px !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.issue:hover, .step:hover {
+  transform: translateY(-5px) scale(1.02);
+  background: rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 
+    inset -5px -5px 15px rgba(0, 0, 0, 0.02),
+    inset 5px 5px 15px rgba(255, 255, 255, 1),
+    0 20px 40px rgba(35, 77, 59, 0.15) !important;
+}
+
+/* 2. Super 3D Buttons (Brand Colors retained) */
+.btn {
+  background: rgba(47, 116, 94, 0.8) !important; 
+  backdrop-filter: blur(15px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+  
+  border: 1px solid rgba(47, 116, 94, 0.5) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+  
+  box-shadow: 
+    inset 0px 4px 6px rgba(255, 255, 255, 0.3), 
+    inset 0px -4px 6px rgba(0, 0, 0, 0.2), 
+    0 8px 20px rgba(47, 116, 94, 0.3) !important;
+    
+  border-radius: 16px !important; 
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn:hover {
+  background: rgba(47, 116, 94, 0.95) !important;
+  transform: translateY(-3px);
+  box-shadow: 
+    inset 0px 5px 8px rgba(255, 255, 255, 0.4),
+    inset 0px -4px 6px rgba(0, 0, 0, 0.25),
+    0 12px 25px rgba(47, 116, 94, 0.4) !important;
+}
+
+/* 3. Deep Inset Inputs */
+input, select, textarea {
+  background: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(15px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(15px) saturate(150%) !important;
+  
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-top: 1.5px solid rgba(0, 0, 0, 0.08) !important; 
+  
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.05) !important;
   color: var(--ink) !important;
   border-radius: 12px !important;
   transition: all 0.3s ease !important;
 }
 
 input:focus, select:focus, textarea:focus {
+  background: rgba(255, 255, 255, 0.7) !important;
   border-color: var(--green) !important;
   box-shadow: 
-    inset 0 2px 4px rgba(255, 255, 255, 1),
-    0 0 0 3px rgba(47, 116, 94, 0.2) !important;
+    inset 0 4px 8px rgba(0, 0, 0, 0.02),
+    0 0 0 4px rgba(47, 116, 94, 0.2) !important;
   outline: none !important;
-}
-
-/* 2. Buttons: Solid Brand Green + 3D Glass edge */
-.btn {
-  background: rgba(47, 116, 94, 0.92) !important; /* Rich green restored */
-  backdrop-filter: blur(25px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
-  
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.5) !important; /* Bright top rim */
-  
-  box-shadow: 
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.4), /* Inner 3D glow */
-    0 8px 20px rgba(47, 116, 94, 0.25) !important;
-    
-  border-radius: 12px !important; 
-  color: #ffffff !important;
-}
-
-.btn:hover {
-  background: rgba(47, 116, 94, 1) !important;
-  transform: translateY(-2px);
-  box-shadow: 
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.5),
-    0 10px 25px rgba(47, 116, 94, 0.35) !important;
-}
-
-/* 3. Issue Cards & Chatbot: Premium frosted 3D containers */
-.issue, 
-.chat-widget, 
-.chat-bubble, 
-.ai-chat-container, 
-.chatbot-button {
-  background: rgba(255, 255, 255, 0.92) !important; /* Mostly solid */
-  backdrop-filter: blur(30px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
-  
-  border: 1px solid rgba(255, 255, 255, 0.8) !important;
-  border-top: 1.5px solid rgba(255, 255, 255, 1) !important; /* 3D light hit */
-  
-  box-shadow: 
-    inset 0 2px 3px rgba(255, 255, 255, 1), /* Inner rim reflection */
-    0 10px 30px rgba(0, 0, 0, 0.06) !important; /* Soft depth */
-    
-  border-radius: 16px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-}
-
-.issue:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 
-    inset 0 2px 3px rgba(255, 255, 255, 1),
-    0 15px 35px rgba(35, 77, 59, 0.1) !important;
-}
-
-/* --- APPLE iOS CONTROL CENTER LIQUID GLASS --- */
-
-/* 1. Frosted Acrylic Inputs & Textareas */
-input, select, textarea {
-  background: rgba(255, 255, 255, 0.15) !important; /* Much more transparent */
-  backdrop-filter: blur(35px) saturate(200%) !important; /* Extreme blur and color pop */
-  -webkit-backdrop-filter: blur(35px) saturate(200%) !important; /* Safari support */
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  
-  /* THE SECRET SAUCE: 3D Beveled Edges */
-  box-shadow: 
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.8), /* Bright top rim highlight */
-    inset 0 -1px 2px rgba(0, 0, 0, 0.03),     /* Subtle bottom rim depth */
-    0 4px 15px rgba(0, 0, 0, 0.05) !important; /* Soft outer shadow */
-  
-  color: var(--ink) !important;
-  border-radius: 16px !important; /* Softer, rounder corners like iOS */
-  transition: all 0.3s ease !important;
-}
-
-/* Give inputs a bright glass glow when typing */
-input:focus, select:focus, textarea:focus {
-  background: rgba(255, 255, 255, 0.25) !important;
-  border-color: rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 
-    inset 0 1.5px 2px rgba(255, 255, 255, 1),
-    0 0 0 4px rgba(255, 255, 255, 0.3), /* Glassy focus ring */
-    0 4px 15px rgba(0, 0, 0, 0.05) !important;
-  outline: none !important;
-}
-
-/* 2. iOS Glassmorphic Buttons */
-.btn {
-  /* A deeply translucent version of your brand green */
-  background: rgba(47, 116, 94, 0.35) !important; 
-  backdrop-filter: blur(35px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(35px) saturate(200%) !important;
-  
-  /* Matching glass border with a stronger top rim */
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.4) !important; 
-  
-  /* 3D Glass Highlights */
-  box-shadow: 
-    inset 0 1px 2px rgba(255, 255, 255, 0.3), /* Inner glow */
-    0 8px 25px rgba(47, 116, 94, 0.15) !important;
-  
-  border-radius: 24px !important; /* Super rounded, pill-like iOS buttons */
-  color: #ffffff !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important; /* Makes text readable on glass */
-}
-
-/* Button Hover State */
-.btn:hover {
-  background: rgba(47, 116, 94, 0.45) !important;
-  transform: translateY(-2px);
-  box-shadow: 
-    inset 0 1px 2px rgba(255, 255, 255, 0.5),
-    0 10px 30px rgba(47, 116, 94, 0.2) !important;
 }
 
 /* --- CIVIC PIZZA TRACKER --- */
