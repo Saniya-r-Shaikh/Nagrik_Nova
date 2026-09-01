@@ -67,6 +67,46 @@ header {
   }
 }
 
+/* --- LIQUID GLASS: BUTTONS & INPUTS --- */
+
+/* 1. Frosted Acrylic Inputs */
+input, select, textarea {
+  background: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.02) !important;
+  color: var(--ink) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Make inputs glow slightly when focused */
+input:focus, select:focus, textarea:focus {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(47, 116, 94, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(47, 116, 94, 0.15), inset 0 2px 5px rgba(0, 0, 0, 0.02) !important;
+  outline: none !important;
+}
+
+/* 2. Glassmorphic Buttons */
+.btn {
+  /* Using a translucent version of your brand green */
+  background: rgba(47, 116, 94, 0.7) !important; 
+  backdrop-filter: blur(8px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(47, 116, 94, 0.2) !important;
+  color: #fff !important;
+}
+
+/* Button Hover State */
+.btn:hover {
+  background: rgba(47, 116, 94, 0.85) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(47, 116, 94, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
 /* --- CIVIC PIZZA TRACKER --- */
 .civic-tracker {
   background: rgba(255, 255, 255, 0.03);
