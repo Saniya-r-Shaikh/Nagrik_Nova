@@ -581,3 +581,34 @@ div[class*="chat-header"] {
   background: transparent !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.4) !important;
 }
+
+/* --- FIX: AI CHAT WIDGET MOBILE LAYOUT --- */
+@media (max-width: 850px) {
+  /* Ensure the chat window doesn't bleed off small phone screens */
+  .chat-window {
+    width: calc(100vw - 40px) !important;
+    max-width: 340px !important;
+    right: 20px !important;
+    bottom: 20px !important;
+  }
+  
+  /* Force the input and button to sit perfectly side-by-side */
+  .chat-window form {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+  }
+  
+  /* Let the text box take up the available space */
+  .chat-window input {
+    width: 100% !important;
+    flex-shrink: 1 !important;
+  }
+  
+  /* Stop the Send button from taking 100% width! */
+  .chat-window .btn {
+    width: auto !important; 
+    flex-shrink: 0 !important; 
+    padding: 0 18px !important;
+  }
+}
