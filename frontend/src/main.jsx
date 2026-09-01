@@ -881,6 +881,8 @@ function Dashboard({ user }) {
 }
 
 function Detail({ user }) {
+  // NEW: Added nav so we can redirect the user after they delete an issue
+  const nav = useNavigate();
   const { id } = useParams(),
     [issue, setIssue] = useState(null),
     [busy, setBusy] = useState(false),
@@ -894,16 +896,15 @@ function Detail({ user }) {
   
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isFlagging, setIsFlagging] = useState(false);
 
-  // NEW: Create a reference for the Analysis section
   const analysisRef = React.useRef(null);
 
-  // NEW: Watch for when the issue becomes analyzed, and smoothly scroll to it
   useEffect(() => {
     if (issue?.analyzed && analysisRef.current) {
       setTimeout(() => {
         analysisRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 150); // Tiny delay to let the DOM paint the new section first
+      }, 150);
     }
   }, [issue?.analyzed]);
 
@@ -928,7 +929,6 @@ function Detail({ user }) {
       };
 
       loadData();
-
       window.addEventListener("storage", loadData);
       return () => window.removeEventListener("storage", loadData);
     }
@@ -945,12 +945,46 @@ function Detail({ user }) {
     }
   };
 
+  const flagIssue = async () => {
+    if (!window.confirm("Are you sure you want to flag this issue? This will penalize the user.")) return;
+    setIsFlagging(true);
+    try {
+      const r = await api.post(`/issues/${id}/flag`);
+      setIssue(r.data);
+    } catch (e) {
+      alert("Failed to flag issue.");
+    } finally {
+      setIsFlagging(false);
+    }
+  };
+
+  // --- NEW: DELETE ISSUE FUNCTION ---
+  const deleteIssue = async () => {
+    if (!window.confirm("Are you sure you want to permanently delete this report? This cannot be undone.")) return;
+    try {
+      await api.delete(`/issues/${id}`);
+      nav("/issues"); // Send them back to the feed since this page is gone!
+    } catch (e) {
+      alert("Failed to delete issue.");
+    }
+  };
+
+  // --- NEW: DELETE COMMENT FUNCTION ---
+  const deleteComment = async (commentId) => {
+    if (!window.confirm("Delete this comment?")) return;
+    try {
+      const r = await api.delete(`/issues/${id}/comments/${commentId}`);
+      setIssue(r.data); // Immediately updates the UI
+    } catch (e) {
+      alert("Failed to delete comment.");
+    }
+  };
+
   const handleUpvote = () => {
     if (!hasUpvoted) {
       const newUpvotes = upvotes + 1;
       setUpvotes(newUpvotes);
       setHasUpvoted(true);
-      
       localStorage.setItem(`nn-upvotes-${id}`, newUpvotes);
       localStorage.setItem(`nn-upvoted-${id}-${user.id || user._id}`, "true");
     }
@@ -961,12 +995,9 @@ function Detail({ user }) {
     if (pledgeText.trim()) {
       const newPledge = { orgName: user.name, text: pledgeText };
       const updatedPledges = [...pledges, newPledge];
-      
       setPledges(updatedPledges);
       localStorage.setItem(`nn-pledges-${id}`, JSON.stringify(updatedPledges));
-      
       window.dispatchEvent(new Event("storage"));
-      
       setPledgeText("");
       setShowPledgeForm(false);
     }
@@ -976,7 +1007,6 @@ function Detail({ user }) {
     e.preventDefault();
     if (!newComment.trim()) return;
     setIsSubmittingComment(true);
-    
     try {
       const r = await api.post(`/issues/${id}/comments`, {
         text: newComment,
@@ -991,28 +1021,12 @@ function Detail({ user }) {
       setIsSubmittingComment(false);
     }
   };
-  const [isFlagging, setIsFlagging] = useState(false);
 
-  const flagIssue = async () => {
-    if (!window.confirm("Are you sure you want to flag this issue? This will penalize the user.")) return;
-    setIsFlagging(true);
-    try {
-      const r = await api.post(`/issues/${id}/flag`);
-      setIssue(r.data);
-    } catch (e) {
-      alert("Failed to flag issue.");
-    } finally {
-      setIsFlagging(false);
-    }
-  };
-  
-  if (err && !issue)
-    return (
-      <section className="page">
-        <div className="error">{err}</div>
-      </section>
-    );
+  if (err && !issue) return <section className="page"><div className="error">{err}</div></section>;
   if (!issue) return <Loading />;
+
+  // Checks if the user is an admin OR if they are the original author
+  const canModifyIssue = user.role === 'admin' || user.id === issue.submittedBy || user._id === issue.submittedBy;
 
   return (
     <section className="page detail">
@@ -1038,32 +1052,39 @@ function Detail({ user }) {
           </p>
         </div>
         
-        {user.role === "admin" && (
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {/* The Flag Button */}
-            {issue.isFlagged ? (
-              <button className="btn" style={{ background: '#a23d36' }} disabled>
-                🚩 Flagged
-              </button>
-            ) : (
-              <button className="btn" style={{ background: '#c95147' }} disabled={isFlagging} onClick={flagIssue}>
-                {isFlagging ? "Flagging..." : "🚩 Flag Content"}
-              </button>
-            )}
-            
-            {/* The Analyze Button */}
-            {!issue.analyzed && (
-              <button className="btn analyze" disabled={busy} onClick={analyze}>
-                {busy ? (
-                  <LoaderCircle className="spin" size={17} />
-                ) : (
-                  <BrainCircuit size={18} />
-                )}{" "}
-                {busy ? "Analyzing signal…" : "Analyze with AI"}
-              </button>
-            )}
-          </div>
-        )}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {/* NEW: Conditional Delete Issue Button */}
+          {canModifyIssue && (
+            <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.85)' }} onClick={deleteIssue}>
+              🗑️ Delete Report
+            </button>
+          )}
+
+          {user.role === "admin" && (
+            <>
+              {issue.isFlagged ? (
+                <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.5)' }} disabled>
+                  🚩 Flagged
+                </button>
+              ) : (
+                <button className="btn" style={{ background: 'rgba(201, 81, 71, 0.85)' }} disabled={isFlagging} onClick={flagIssue}>
+                  {isFlagging ? "Flagging..." : "🚩 Flag Content"}
+                </button>
+              )}
+              
+              {!issue.analyzed && (
+                <button className="btn analyze" disabled={busy} onClick={analyze}>
+                  {busy ? (
+                    <LoaderCircle className="spin" size={17} />
+                  ) : (
+                    <BrainCircuit size={18} />
+                  )}{" "}
+                  {busy ? "Analyzing signal…" : "Analyze with AI"}
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       <IssueTracker issue={issue} />
@@ -1125,7 +1146,6 @@ function Detail({ user }) {
         )}
       </div>
 
-      {/* High-res image display */}
       {issue.imageUrl && (
         <div style={{ margin: '30px 0', borderRadius: '12px', overflow: 'hidden' }}>
           <img src={issue.imageUrl} alt="Issue evidence" style={{ width: '100%', maxHeight: '500px', objectFit: 'cover' }} />
@@ -1133,20 +1153,39 @@ function Detail({ user }) {
       )}
 
       {/* Community Comments Section */}
-      <div style={{ background: '#fff', padding: '25px', borderRadius: '12px', border: '1px solid #e1e6df', marginBottom: '30px' }}>
+      <div className="community-impact" style={{ padding: '25px', marginBottom: '30px' }}>
         <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>Community Discussion</h3>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px' }}>
           {issue.comments && issue.comments.length > 0 ? (
-            issue.comments.map((c, i) => (
-              <div key={i} style={{ padding: '15px', background: '#f7f9f6', borderRadius: '8px', borderLeft: '3px solid var(--green)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
-                  <strong>{c.postedBy} <span style={{ color: '#888', fontWeight: 'normal' }}>({c.role})</span></strong>
-                  <span style={{ color: '#888' }}>{new Date(c.createdAt).toLocaleDateString()}</span>
+            issue.comments.map((c, i) => {
+              // NEW: Check if this specific user is allowed to delete this specific comment
+              const canDeleteComment = user.role === 'admin' || user.name === c.postedBy;
+              
+              return (
+                <div key={i} style={{ padding: '15px', background: 'rgba(255,255,255,0.4)', borderRadius: '8px', borderLeft: '3px solid var(--green)', backdropFilter: 'blur(10px)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
+                    <strong>{c.postedBy} <span style={{ color: '#888', fontWeight: 'normal' }}>({c.role})</span></strong>
+                    
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <span style={{ color: '#888' }}>{new Date(c.createdAt).toLocaleDateString()}</span>
+                      
+                      {/* NEW: Conditional Delete Comment Button */}
+                      {canDeleteComment && (
+                        <button 
+                          onClick={() => deleteComment(c._id)} 
+                          style={{ background: 'none', border: 'none', color: '#a23d36', cursor: 'pointer', fontSize: '14px', padding: 0 }}
+                          title="Delete comment"
+                        >
+                          ✖
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{c.text}</p>
                 </div>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>{c.text}</p>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p style={{ color: '#888', fontStyle: 'italic', fontSize: '14px' }}>No comments yet. Start the conversation!</p>
           )}
@@ -1167,7 +1206,6 @@ function Detail({ user }) {
       </div>
 
       {issue.analyzed ? (
-        // NEW: Wrapper div with the ref attached so the page knows where to scroll!
         <div ref={analysisRef} style={{ scrollMarginTop: '100px' }}>
           <Analysis issue={issue} />
         </div>

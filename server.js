@@ -216,6 +216,34 @@ app.post('/api/issues/:id/comments', async (req, res) => {
   }
 });
 
+// --- DELETE ISSUE ROUTE ---
+app.delete('/api/issues/:id', async (req, res) => {
+  try {
+    await Ticket.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Issue deleted successfully' });
+  } catch (error) {
+    console.error("CRASH IN DELETE ISSUE:", error);
+    res.status(500).json({ message: 'Failed to delete issue' });
+  }
+});
+
+// --- DELETE COMMENT ROUTE ---
+app.delete('/api/issues/:id/comments/:commentId', async (req, res) => {
+  try {
+    const issue = await Ticket.findById(req.params.id);
+    if (!issue) return res.status(404).json({ message: 'Issue not found' });
+    
+    // Mongoose automatically assigns an _id to items in an array. We filter it out!
+    issue.comments = issue.comments.filter(c => c._id.toString() !== req.params.commentId);
+    await issue.save();
+    
+    res.json(issue);
+  } catch (error) {
+    console.error("CRASH IN DELETE COMMENT:", error);
+    res.status(500).json({ message: 'Failed to delete comment' });
+  }
+});
+
 app.get('/api/issues/:id', async (req, res) => {
   try {
     const { id } = req.params;
