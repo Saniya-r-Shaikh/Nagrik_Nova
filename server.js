@@ -4,7 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increased limit for Base64 images!
 app.use(cors());
 
 // --- DATABASE CONNECTION ---
@@ -14,6 +14,8 @@ mongoose.connect(process.env.MONGO_URI)
 
 // --- MODELS (6 Collections) ---
 const User = mongoose.model('User', new mongoose.Schema({ username: String, password: String, role: String, coins: { type: Number, default: 0 } }));
+
+// THE FIX: Added imageUrl and comments to the Ticket (Issue) Schema!
 const Ticket = mongoose.model('Ticket', new mongoose.Schema({ 
   ticketId: String, 
   title: String, 
@@ -28,8 +30,17 @@ const Ticket = mongoose.model('Ticket', new mongoose.Schema({
   priority: String,
   requiredExpertise: [String],
   solutionIdea: String,
-  matchedOrganizations: Array
+  matchedOrganizations: Array,
+  // --- NEW PHASE 1 SOCIAL FEATURES ---
+  imageUrl: { type: String, default: "" },
+  comments: [{
+    text: String,
+    postedBy: String,
+    role: String,
+    createdAt: { type: Date, default: Date.now }
+  }]
 }));
+
 const Challenge = mongoose.model('Challenge', new mongoose.Schema({ title: String, description: String }));
 const Proposal = mongoose.model('Proposal', new mongoose.Schema({ challengeId: String, solution: String }));
 const SensorData = mongoose.model('SensorData', new mongoose.Schema({ sensorType: String, reading: String, timestamp: { type: Date, default: Date.now } }));
@@ -37,11 +48,9 @@ const Message = mongoose.model('Message', new mongoose.Schema({ senderId: String
 
 // --- ESSENTIAL APIs ---
 
-// Users & Auth 
 // Users & Auth (Basic Login)
 app.post('/api/auth/register', async (req, res) => {
   try {
-    // THE FIX: Catch the referredBy ID from the frontend
     const { email, password, role, name, referredBy } = req.body; 
     console.log("REGISTER ATTEMPT:", email); 
 
@@ -145,7 +154,7 @@ app.post('/complaints', async (req, res) => {
 
 app.get('/api/issues', async (req, res) => {
   try {
-    const issues = await Ticket.find(); 
+    const issues = await Ticket.find().sort({ createdAt: -1 }); // Added sort so newest posts show first!
     res.json(issues);
   } catch (error) {
     console.error("CRASH IN /api/issues:", error); 
@@ -155,7 +164,8 @@ app.get('/api/issues', async (req, res) => {
 
 app.post('/api/issues', async (req, res) => {
   try {
-    const { title, description, location, submittedBy } = req.body; 
+    // THE FIX: Now accepts imageUrl from the frontend!
+    const { title, description, location, submittedBy, submitterRole, imageUrl } = req.body; 
     console.log("NEW TICKET SUBMITTED:", title);
 
     const newTicket = await new Ticket({ 
@@ -163,7 +173,8 @@ app.post('/api/issues', async (req, res) => {
       description, 
       location,
       submittedBy, 
-      submitterRole: 'citizen',
+      submitterRole: submitterRole || 'citizen',
+      imageUrl: imageUrl || "", 
       analyzed: false
     }).save();
     
@@ -171,6 +182,24 @@ app.post('/api/issues', async (req, res) => {
   } catch (error) {
     console.error("CRASH IN POST /api/issues:", error);
     res.status(500).json({ message: 'Server crash saving the issue' });
+  }
+});
+
+// --- NEW ROUTE: ADD A COMMENT ---
+app.post('/api/issues/:id/comments', async (req, res) => {
+  try {
+    const { text, postedBy, role } = req.body;
+    const issue = await Ticket.findById(req.params.id);
+    
+    if (!issue) return res.status(404).json({ message: 'Issue not found' });
+
+    issue.comments.push({ text, postedBy, role });
+    await issue.save();
+    
+    res.json(issue);
+  } catch (error) {
+    console.error("CRASH IN POST COMMENT:", error);
+    res.status(500).json({ message: 'Error saving comment' });
   }
 });
 
@@ -278,7 +307,6 @@ app.post('/api/issues/:id/analyze', async (req, res) => {
 // --- AI CHATBOT ROUTE (Nova Chat Widget) ---
 app.post('/api/ai/chat', async (req, res) => {
     try {
-        // We now need the userId from the frontend to know who gets the coins!
         const { message, history, userId } = req.body; 
         
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -335,16 +363,14 @@ app.post('/api/ai/chat', async (req, res) => {
         if (aiResultData.status === 'final_report') {
             if (aiResultData.dataToSave.description && aiResultData.dataToSave.location) {
                 
-                // Add the user ID to the ticket so they own it
                 const ticketData = {
                   ...aiResultData.dataToSave,
-                  submittedBy: userId || 'anonymous' // Fallback if they aren't logged in
+                  submittedBy: userId || 'anonymous' 
                 };
 
                 const newTicket = new Ticket(ticketData);
                 await newTicket.save();
                 
-                // --- THE FIX: COIN REWARD LOGIC FOR CHATBOT ---
                 if (userId) {
                     let coinReward = 10; 
                     if (aiResultData.dataToSave.severity === 3) coinReward = 50;
