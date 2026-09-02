@@ -818,28 +818,49 @@ body.dark-mode .tracker-node.active .node-icon {
   color: #10b981 !important;
 }
 
-/* --- HEAVY BLUR FOR TOP NAVIGATION BAR --- */
+/* --- 1. PROPER FROSTED HEADER (High Opacity + Heavy Blur) --- */
 header {
-  background: rgba(251, 250, 245, 0.65) !important; /* Semi-transparent base */
-  backdrop-filter: blur(45px) saturate(200%) !important; /* Extreme blur */
-  -webkit-backdrop-filter: blur(45px) saturate(200%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important; /* 3D bottom edge */
+  background: rgba(251, 250, 245, 0.90) !important; /* Much less transparent */
+  backdrop-filter: blur(40px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important;
 }
 
-/* Ensure Dark Mode header gets the same heavy blur */
 body.dark-mode header,
 body.dark-mode nav.show {
-  background: rgba(9, 14, 23, 0.65) !important; /* Dark tinted base */
-  backdrop-filter: blur(45px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(45px) saturate(200%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(9, 14, 23, 0.90) !important; /* Thick dark smoked glass */
+  backdrop-filter: blur(40px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
 }
 
-/* Ensure the mobile dropdown menu gets the blur too */
 @media (max-width: 850px) {
   header nav {
-    background: rgba(251, 250, 245, 0.8) !important;
-    backdrop-filter: blur(45px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(45px) saturate(200%) !important;
+    background: rgba(9, 14, 23, 0.90) !important; /* Thick dark smoked glass */
+    backdrop-filter: blur(40px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
   }
+}
+
+/* --- 2. PURE WHITE TEXT FOR DARK MODE --- */
+/* Forces all paragraphs, small text, labels, and spans to pure white */
+body.dark-mode p, 
+body.dark-mode span:not(.role):not(.priority):not(.pending):not(.node-label),
+body.dark-mode small,
+body.dark-mode label,
+body.dark-mode .quote,
+body.dark-mode .location,
+body.dark-mode div {
+  color: #ffffff !important; 
+}
+
+/* Keep inputs and placeholders readable but slightly softer than pure text */
+body.dark-mode input, 
+body.dark-mode select, 
+body.dark-mode textarea {
+  color: #ffffff !important;
+}
+
+body.dark-mode input::placeholder, 
+body.dark-mode textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
 }
