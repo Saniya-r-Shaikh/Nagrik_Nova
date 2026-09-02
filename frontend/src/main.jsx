@@ -218,29 +218,6 @@ function CursorCompanion() {
   React.useEffect(() => {
     const moveCompanion = (e) => {
       if (companionRef.current) {
-        // We use translate3d for hardware acceleration (super smooth)
-        companionRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
-      }
-    };
-
-    window.addEventListener('mousemove', moveCompanion);
-    return () => window.removeEventListener('mousemove', moveCompanion);
-  }, []);
-
-  return (
-    <div ref={companionRef} className="cursor-companion">
-      {/* The Character! You can change <Bot /> to "🕷️" or "⚔️" if you want Marvel vibes */}
-      <Bot size={20} strokeWidth={2.5} />
-    </div>
-  );
-}
-
-function CursorCompanion() {
-  const companionRef = React.useRef(null);
-
-  React.useEffect(() => {
-    const moveCompanion = (e) => {
-      if (companionRef.current) {
         // translate3d forces hardware acceleration for zero-latency smoothness
         companionRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
       }
