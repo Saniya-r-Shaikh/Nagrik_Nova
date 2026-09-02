@@ -16,6 +16,7 @@ import {
   useParams,
 } from "react-router-dom";
 import axios from "axios";
+// THE FIX: Merged Moon and Sun into the main lucide-react import block!
 import {
   ArrowRight,
   BrainCircuit,
@@ -35,12 +36,12 @@ import {
   ClipboardList,
   ThumbsUp,       
   HandHeart,
-  Eye      
+  Eye,
+  Moon, 
+  Sun 
 } from "lucide-react";
 import "./styles.css";
 import Footer from "./Footer";
-
-import { Moon, Sun } from 'lucide-react';
 
 export function DarkModeToggle() {
   const [isDark, setIsDark] = useState(() => {
@@ -64,8 +65,7 @@ export function DarkModeToggle() {
       style={{ 
         background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(24, 41, 55, 0.85)',
         padding: '10px 14px',
-        color: '#fff',
-        marginLeft: '15px' 
+        color: '#fff'
       }}
       title="Toggle Dark Mode"
     >
@@ -217,7 +217,6 @@ function Require({ user, children }) {
 function Nav({ auth }) {
   const [open, setOpen] = useState(false);
   
-  // A quick helper function to close the menu
   const closeMenu = () => setOpen(false);
   
   const [colorblind, setColorblind] = useState(() => 
@@ -248,7 +247,6 @@ function Nav({ auth }) {
       </button>
       
       <nav className={open ? "show" : ""}>
-        {/* Added closeMenu to ALL links below */}
         <NavLink to="/issues" onClick={closeMenu}>Explore issues</NavLink>
         <NavLink to="/map" onClick={closeMenu}>Live Map</NavLink>
         
@@ -276,6 +274,9 @@ function Nav({ auth }) {
         >
           <Eye size={18} /> {colorblind ? "Standard Mode" : "Accessible View"}
         </button>
+
+        {/* THE FIX: Added the toggle switch directly into the navigation layout! */}
+        <DarkModeToggle />
 
         {auth.user ? (
           <div className="nav-user" style={{ display: "flex", alignItems: "center", gap: "15px" }}>
@@ -507,7 +508,6 @@ const roleFields = {
 
 function Register({ auth }) {
   const nav = useNavigate(),
-    // THE FIX: Grab the ?ref= ID from the browser URL automatically
     [d, setD] = useState({ 
       role: "citizen", 
       referredBy: new URLSearchParams(window.location.search).get('ref') || "" 
@@ -519,14 +519,12 @@ function Register({ auth }) {
   const submit = async (e) => {
     e.preventDefault();
     try {
-      // It will now send `referredBy` to the backend!
       auth.signIn((await api.post("/auth/register", d)).data);
       nav("/issues");
     } catch (e) {
       setErr(e.response?.data?.message || "Could not create account.");
     }
   };
-  // ... (rest of the component stays exactly the same)
   return (
     <AuthShell
       title="Join Nagrik Nova"
@@ -651,7 +649,6 @@ function Issues({ user }) {
 function IssueCard({ issue }) {
   return (
     <Link to={`/issues/${issue._id}`} className="issue" style={{ overflow: 'hidden', padding: 0 }}>
-      {/* NEW: Display the image if it exists */}
       {issue.imageUrl && (
         <img 
           src={issue.imageUrl} 
@@ -690,7 +687,6 @@ function Dashboard({ user }) {
   const nav = useNavigate(),
     [issues, setIssues] = useState([]);
   
-  // State for form data and image upload
   const [data, setData] = useState({ title: "", description: "", state: "", city: "", location: "", imageUrl: "" });
   const [imagePreview, setImagePreview] = useState(null);
   
@@ -711,12 +707,10 @@ function Dashboard({ user }) {
       );
   }, [user.id]);
 
-  // Handle image upload and conversion
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    // Check file size (limit to ~4MB to prevent Base64 lag)
     if (file.size > 4000000) {
       alert("Image is too large! Please choose a smaller photo.");
       return;
@@ -748,7 +742,6 @@ function Dashboard({ user }) {
       });
       setIssues([r.data, ...issues]);
       
-      // Reset form
       setData({ title: "", description: "", state: "", city: "", location: "", imageUrl: "" });
       setImagePreview(null);
       setLocationAttached(null);
@@ -799,7 +792,6 @@ function Dashboard({ user }) {
             />
           </label>
 
-          {/* NEW IMAGE UPLOAD SECTION */}
           <label>
             Attach a photo (Optional)
             <input 
@@ -1084,7 +1076,6 @@ function Detail({ user }) {
         
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'nowrap', width: '100%', justifyContent: 'space-between' }}>
           
-          {/* 1. Analyze */}
           {user.role === "admin" && !issue.analyzed && (
             <button className="btn analyze" disabled={busy} onClick={analyze} style={{ flex: 1, padding: '12px 4px', whiteSpace: 'nowrap', fontSize: 'clamp(10px, 2.5vw, 13px)', minWidth: 0, justifyContent: 'center' }}>
               {busy ? (
@@ -1096,14 +1087,12 @@ function Detail({ user }) {
             </button>
           )}
 
-          {/* 2. Delete */}
           {canModifyIssue && (
             <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.85)', flex: 1, padding: '12px 4px', whiteSpace: 'nowrap', fontSize: 'clamp(10px, 2.5vw, 13px)', minWidth: 0, justifyContent: 'center' }} onClick={deleteIssue}>
               🗑️ <span style={{ marginLeft: '4px' }}>Delete</span>
             </button>
           )}
 
-          {/* 3. Flag */}
           {user.role === "admin" && (
             issue.isFlagged ? (
               <button className="btn" style={{ background: 'rgba(162, 61, 54, 0.5)', flex: 1, padding: '12px 4px', whiteSpace: 'nowrap', fontSize: 'clamp(10px, 2.5vw, 13px)', minWidth: 0, justifyContent: 'center' }} disabled>
