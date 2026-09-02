@@ -819,6 +819,14 @@ body.dark-mode .tracker-node.active .node-icon {
   border-color: #10b981 !important;
   color: #10b981 !important;
 }
+/* THE FIX: Force the tracker text to be readable in dark mode */
+body.dark-mode .tracker-node .node-label {
+  color: #cbd5e1 !important; /* Light grey for inactive steps */
+}
+
+body.dark-mode .tracker-node.active .node-label {
+  color: #ffffff !important; /* Pure white for active steps */
+}
 
 /* ========================================= */
 /* --- SOLID OPAQUE: TOP NAVIGATION BAR  --- */
