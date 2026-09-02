@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 import "./styles.css";
 import Footer from "./Footer";
-import React, { useState, useEffect } from 'react';
+
 import { Moon, Sun } from 'lucide-react';
 
 export function DarkModeToggle() {
