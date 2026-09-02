@@ -693,3 +693,69 @@ button[class*="immersive"]:hover {
     inset 0px 6px 10px rgba(255, 255, 255, 0.6),
     0 15px 35px rgba(0, 194, 255, 0.4) !important;
 }
+
+/* ========================================= */
+/* --- TACTICAL SMOKED GLASS (DARK MODE) --- */
+/* ========================================= */
+
+/* 1. Deep Space Background */
+body.dark-mode {
+  background: linear-gradient(135deg, #090e17 0%, #111827 40%, #030712 100%) !important;
+  color: #f8fafc !important;
+}
+
+body.dark-mode header, 
+body.dark-mode nav {
+  background: rgba(9, 14, 23, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 2. Smoked Acrylic Panels */
+body.dark-mode .issue, 
+body.dark-mode .report-form, 
+body.dark-mode .my-issues, 
+body.dark-mode .analysis, 
+body.dark-mode .community-impact, 
+body.dark-mode .chat-window, 
+body.dark-mode .step {
+  background: rgba(17, 24, 39, 0.55) !important; /* Dark tinted glass */
+  
+  /* Tactical rim lighting */
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  
+  box-shadow: 
+    inset -5px -5px 15px rgba(0, 0, 0, 0.5), 
+    inset 5px 5px 15px rgba(255, 255, 255, 0.03), 
+    0 15px 35px rgba(0, 0, 0, 0.6) !important;
+    
+  color: #f1f5f9 !important;
+}
+
+/* 3. Text & Typography Overrides */
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3, 
+body.dark-mode strong {
+  color: #ffffff !important;
+}
+
+body.dark-mode p, 
+body.dark-mode span:not(.role):not(.priority):not(.btn) {
+  color: #cbd5e1 !important;
+}
+
+/* 4. Fix Dark Mode Inputs */
+body.dark-mode input, 
+body.dark-mode select, 
+body.dark-mode textarea {
+  background: rgba(0, 0, 0, 0.4) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+body.dark-mode input::placeholder, 
+body.dark-mode textarea::placeholder {
+  color: #64748b !important;
+}

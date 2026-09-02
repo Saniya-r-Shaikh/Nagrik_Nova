@@ -39,6 +39,40 @@ import {
 } from "lucide-react";
 import "./styles.css";
 import Footer from "./Footer";
+import React, { useState, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
+
+export function DarkModeToggle() {
+  const [isDark, setIsDark] = useState(() => {
+    return localStorage.getItem('nn-dark-mode') === 'true';
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('nn-dark-mode', 'true');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('nn-dark-mode', 'false');
+    }
+  }, [isDark]);
+
+  return (
+    <button 
+      onClick={() => setIsDark(!isDark)}
+      className="btn small"
+      style={{ 
+        background: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(24, 41, 55, 0.85)',
+        padding: '10px 14px',
+        color: '#fff',
+        marginLeft: '15px' 
+      }}
+      title="Toggle Dark Mode"
+    >
+      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+  );
+}
 
 // --- INDIAN STATES & CITIES DATA DICTIONARY ---
 const indiaData = {
