@@ -1,4 +1,5 @@
 import Rewards from "./Rewards";
+import { Bot } from 'lucide-react'; // Or swap for a custom emoji/image!
 import CitizenMap from "./CitizenMap";
 import AIChatWidget from './AIChatWidget';
 import ARReporter from "./ARReporter";
@@ -155,6 +156,7 @@ function App() {
   const auth = useAuth();
   return (
     <>
+      <CursorCompanion /> {/* THE NEW TRACKER! */}
       <Nav auth={auth} />
       <main>
         <Routes>
@@ -210,6 +212,28 @@ function App() {
   );
 }
 
+function CursorCompanion() {
+  const companionRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const moveCompanion = (e) => {
+      if (companionRef.current) {
+        // We use translate3d for hardware acceleration (super smooth)
+        companionRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+      }
+    };
+
+    window.addEventListener('mousemove', moveCompanion);
+    return () => window.removeEventListener('mousemove', moveCompanion);
+  }, []);
+
+  return (
+    <div ref={companionRef} className="cursor-companion">
+      {/* The Character! You can change <Bot /> to "🕷️" or "⚔️" if you want Marvel vibes */}
+      <Bot size={20} strokeWidth={2.5} />
+    </div>
+  );
+}
 function Require({ user, children }) {
   return user ? children : <Navigate to="/login" replace />;
 }
