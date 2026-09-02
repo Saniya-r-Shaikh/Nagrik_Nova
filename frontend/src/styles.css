@@ -817,3 +817,29 @@ body.dark-mode .tracker-node.active .node-icon {
   border-color: #10b981 !important;
   color: #10b981 !important;
 }
+
+/* --- HEAVY BLUR FOR TOP NAVIGATION BAR --- */
+header {
+  background: rgba(251, 250, 245, 0.65) !important; /* Semi-transparent base */
+  backdrop-filter: blur(45px) saturate(200%) !important; /* Extreme blur */
+  -webkit-backdrop-filter: blur(45px) saturate(200%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important; /* 3D bottom edge */
+}
+
+/* Ensure Dark Mode header gets the same heavy blur */
+body.dark-mode header,
+body.dark-mode nav.show {
+  background: rgba(9, 14, 23, 0.65) !important; /* Dark tinted base */
+  backdrop-filter: blur(45px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(45px) saturate(200%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Ensure the mobile dropdown menu gets the blur too */
+@media (max-width: 850px) {
+  header nav {
+    background: rgba(251, 250, 245, 0.8) !important;
+    backdrop-filter: blur(45px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(45px) saturate(200%) !important;
+  }
+}
