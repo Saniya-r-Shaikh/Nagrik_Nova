@@ -819,32 +819,32 @@ body.dark-mode .tracker-node.active .node-icon {
 }
 
 /* ========================================= */
-/* --- MAX BLUR: TOP NAVIGATION BAR      --- */
+/* --- SOLID OPAQUE: TOP NAVIGATION BAR  --- */
 /* ========================================= */
 header {
-  background: rgba(251, 250, 245, 0.65) !important; 
-  backdrop-filter: blur(80px) saturate(250%) !important; 
-  -webkit-backdrop-filter: blur(80px) saturate(250%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.6) !important;
+  background: #fbfaf5 !important; /* 100% Solid Light Mode */
+  backdrop-filter: none !important; 
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(24, 41, 55, 0.1) !important;
 }
 
-/* Dark Mode Max Blur Header */
+/* Solid Dark Mode Header */
 body.dark-mode header,
 body.dark-mode nav.show {
-  background: rgba(9, 14, 23, 0.65) !important; 
-  backdrop-filter: blur(80px) saturate(250%) !important; 
-  -webkit-backdrop-filter: blur(80px) saturate(250%) !important;
+  background: #090e17 !important; /* 100% Solid Dark Mode */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Mobile Dropdown Menu Max Blur */
+/* Solid Mobile Dropdown Menu */
 @media (max-width: 850px) {
   header nav {
-    background: rgba(251, 250, 245, 0.75) !important;
-    backdrop-filter: blur(80px) saturate(250%) !important;
-    -webkit-backdrop-filter: blur(80px) saturate(250%) !important;
+    background: #fbfaf5 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
   body.dark-mode header nav {
-    background: rgba(9, 14, 23, 0.75) !important;
+    background: #090e17 !important;
   }
 }
