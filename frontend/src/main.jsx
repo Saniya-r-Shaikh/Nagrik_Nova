@@ -234,6 +234,29 @@ function CursorCompanion() {
     </div>
   );
 }
+
+function CursorCompanion() {
+  const companionRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const moveCompanion = (e) => {
+      if (companionRef.current) {
+        // translate3d forces hardware acceleration for zero-latency smoothness
+        companionRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+      }
+    };
+
+    window.addEventListener('mousemove', moveCompanion);
+    return () => window.removeEventListener('mousemove', moveCompanion);
+  }, []);
+
+  return (
+    <div ref={companionRef} className="cursor-companion">
+      {/* THE FIX: Using the Nagrik Nova brand leaf! */}
+      <Leaf size={18} strokeWidth={2.5} />
+    </div>
+  );
+}
 function Require({ user, children }) {
   return user ? children : <Navigate to="/login" replace />;
 }
