@@ -871,11 +871,12 @@ function Dashboard({ user }) {
         </form>
 
         <aside className="my-issues">
-          <div style={{ padding: '20px', background: '#fef3c7', borderRadius: '12px', marginBottom: '25px', border: '1px solid #fde68a' }}>
-            <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#92400e', fontSize: '18px' }}>
+          {/* THE FIX: Removed hardcoded yellow styles and added "issue" class for perfect Light/Dark glass mode */}
+          <div className="issue" style={{ padding: '20px', marginBottom: '25px', display: 'flex', flexDirection: 'column', minHeight: 'auto' }}>
+            <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px' }}>
               <Sparkles size={18} color="#d97706" /> Earn 50 Coins!
             </h3>
-            <p style={{ fontSize: '14px', color: '#92400e', marginBottom: '15px', lineHeight: '1.4' }}>
+            <p style={{ fontSize: '14px', marginBottom: '15px', lineHeight: '1.4' }}>
               Invite friends to Nagrik Nova. You get 50 coins for every successful sign-up!
             </p>
             <button 
@@ -885,12 +886,11 @@ function Dashboard({ user }) {
                 alert("Referral link copied! Send it to your friends.");
               }} 
               className="btn small full" 
-              style={{ backgroundColor: '#d97706', color: 'white', border: 'none', justifyContent: 'center' }}
+              style={{ background: 'rgba(217, 119, 6, 0.85)', justifyContent: 'center' }}
             >
               Copy Referral Link
             </button>
           </div>
-          
           <h2>
             Your reports <span>{issues.length}</span>
           </h2>
