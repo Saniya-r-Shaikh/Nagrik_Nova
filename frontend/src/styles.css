@@ -704,21 +704,37 @@ body.dark-mode {
   color: #f8fafc !important;
 }
 
+/* Fix Header & Mobile Nav */
 body.dark-mode header, 
-body.dark-mode nav {
-  background: rgba(9, 14, 23, 0.8) !important;
+body.dark-mode nav.show {
+  background: rgba(9, 14, 23, 0.85) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* 2. Smoked Acrylic Panels */
+/* 2. CATCH-ALL: Smoked Acrylic Panels */
 body.dark-mode .issue, 
+body.dark-mode .issue-card,
+body.dark-mode .match-card,
 body.dark-mode .report-form, 
 body.dark-mode .my-issues, 
 body.dark-mode .analysis, 
+body.dark-mode .analysis-grid > div,
+body.dark-mode .solution,
+body.dark-mode .await,
+body.dark-mode .partner,
 body.dark-mode .community-impact, 
+body.dark-mode .pledge-card,
 body.dark-mode .chat-window, 
-body.dark-mode .step {
-  background: rgba(17, 24, 39, 0.55) !important; /* Dark tinted glass */
+body.dark-mode .chat-header,
+body.dark-mode .step,
+body.dark-mode .auth-side,
+body.dark-mode .form-panel,
+body.dark-mode .impact-strip,
+body.dark-mode .hero-art,
+body.dark-mode .empty {
+  background: rgba(17, 24, 39, 0.6) !important;
+  backdrop-filter: blur(24px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(150%) !important;
   
   /* Tactical rim lighting */
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -726,31 +742,54 @@ body.dark-mode .step {
   border-left: 1.5px solid rgba(255, 255, 255, 0.1) !important;
   
   box-shadow: 
-    inset -5px -5px 15px rgba(0, 0, 0, 0.5), 
+    inset -5px -5px 15px rgba(0, 0, 0, 0.4), 
     inset 5px 5px 15px rgba(255, 255, 255, 0.03), 
-    0 15px 35px rgba(0, 0, 0, 0.6) !important;
+    0 15px 35px rgba(0, 0, 0, 0.5) !important;
     
   color: #f1f5f9 !important;
 }
 
-/* 3. Text & Typography Overrides */
+/* Fix nested borders clashing */
+body.dark-mode .analysis-grid,
+body.dark-mode .impact-strip {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: transparent !important;
+}
+body.dark-mode .impact-strip div {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 3. Global Text & Typography Overrides */
 body.dark-mode h1, 
 body.dark-mode h2, 
 body.dark-mode h3, 
-body.dark-mode strong {
+body.dark-mode h4, 
+body.dark-mode strong,
+body.dark-mode .eyebrow {
   color: #ffffff !important;
 }
 
+/* Force regular text to be light grey */
 body.dark-mode p, 
-body.dark-mode span:not(.role):not(.priority):not(.btn) {
+body.dark-mode span:not(.role):not(.priority):not(.pending):not(.node-label),
+body.dark-mode small,
+body.dark-mode label,
+body.dark-mode .quote {
   color: #cbd5e1 !important;
 }
 
-/* 4. Fix Dark Mode Inputs */
+/* Fix AI tags in dark mode */
+body.dark-mode .tags span {
+  background: rgba(47, 116, 94, 0.4) !important;
+  color: #6ee7b7 !important;
+  border: 1px solid rgba(110, 231, 183, 0.3) !important;
+}
+
+/* 4. Inputs & Forms */
 body.dark-mode input, 
 body.dark-mode select, 
 body.dark-mode textarea {
-  background: rgba(0, 0, 0, 0.4) !important;
+  background: rgba(0, 0, 0, 0.5) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
@@ -758,4 +797,23 @@ body.dark-mode textarea {
 body.dark-mode input::placeholder, 
 body.dark-mode textarea::placeholder {
   color: #64748b !important;
+}
+
+/* 5. Icons & Trackers */
+body.dark-mode .icon-box,
+body.dark-mode .partner-icon,
+body.dark-mode .arrow-circle {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #6ee7b7 !important;
+}
+
+body.dark-mode .tracker-node .node-icon {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .tracker-node.active .node-icon {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: #10b981 !important;
+  color: #10b981 !important;
 }
