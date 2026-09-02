@@ -802,9 +802,11 @@ body.dark-mode textarea::placeholder {
 /* 5. Icons & Trackers */
 body.dark-mode .icon-box,
 body.dark-mode .partner-icon,
-body.dark-mode .arrow-circle {
+body.dark-mode .arrow-circle,
+body.dark-mode .user-dot { /* Added user-dot here! */
   background: rgba(255, 255, 255, 0.1) !important;
-  color: #6ee7b7 !important;
+  color: #6ee7b7 !important; /* Bright mint green text */
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
 body.dark-mode .tracker-node .node-icon {
