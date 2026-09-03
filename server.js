@@ -4,8 +4,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
-// Import this at the top of your backend file
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 // Initialize Gemini (Make sure to add GEMINI_API_KEY to your backend .env file!)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.use(express.json({ limit: '10mb' })); // Increased limit for Base64 images!
