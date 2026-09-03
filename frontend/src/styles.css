@@ -919,9 +919,9 @@ body.dark-mode .brand-mark svg {
   color: #235a4a !important; /* Exact light mode original color */
 }
 
-/* THE FIX: Restore deep green text for the light-colored hero orbs and labels in dark mode */
-body.dark-mode .constellation-core,
-body.dark-mode .constellation-core span,
-body.dark-mode .constellation-label {
+/* THE FIX: Use #root to completely overpower the global span rule */
+body.dark-mode #root .constellation-core span,
+body.dark-mode #root .constellation-label,
+body.dark-mode #root .constellation-caption {
   color: #2f745e !important; /* Original deep brand green */
 }
