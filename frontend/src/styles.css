@@ -911,3 +911,9 @@ body.dark-mode .cursor-companion {
     display: none !important;
   }
 }
+
+/* THE FIX: Restore contrast for the brand logo in dark mode */
+body.dark-mode .brand-mark {
+  background: var(--lime) !important; /* Keep the signature brand lime */
+  color: #183e38 !important; /* Force the leaf icon back to dark green */
+}
