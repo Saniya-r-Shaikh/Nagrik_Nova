@@ -777,7 +777,7 @@ function Dashboard({ user }) {
         // THE FIX: Wipe the old title and description so the Auto-Fill button comes back!
         setData({ ...data, imageUrl: compressedBase64, title: "", description: "" });
         setImagePreview(compressedBase64);
-        
+
 {/* MOBILE-ONLY ADD-ON: Hardware specific AI Scanner */}
           {isMobile && (
             <div style={{ padding: '18px', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '12px' }}>
@@ -788,17 +788,17 @@ function Dashboard({ user }) {
                 Skip typing. Snap a live photo of the issue and let Nova AI auto-fill the report details for you.
               </p>
               
-              {/* THE FIX: Dynamically change button text if an image is already attached */}
-              <label className="btn full" style={{ cursor: 'pointer', margin: 0, justifyContent: 'center' }}>
-                <Sparkles size={16} /> {imagePreview ? "Take Photo Again" : "Open Camera"}
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  capture="environment"
-                  onChange={handleImageUpload} 
-                  style={{ display: 'none' }} 
-                />
-              </label>
+              {/* THE FIX: Smart button that checks for the image */}
+<label className="btn full" style={{ cursor: 'pointer', margin: 0, justifyContent: 'center' }}>
+  <Sparkles size={16} /> {imagePreview ? "Take Photo Again" : "Open Camera"}
+  <input 
+    type="file" 
+    accept="image/*" 
+    capture="environment"
+    onChange={handleImageUpload} 
+    style={{ display: 'none' }} 
+  />
+</label>
             </div>
           )}
       };
