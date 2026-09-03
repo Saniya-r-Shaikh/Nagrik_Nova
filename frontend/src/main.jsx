@@ -779,20 +779,30 @@ function Dashboard({ user }) {
     };
   };
 
-  const runAIVision = (e) => {
+  const runAIVision = async (e) => {
     e.preventDefault();
     if (!imagePreview) return;
     
     setIsScanning(true);
     
-    setTimeout(() => {
+    try {
+      // Send the compressed Base64 image to our new real Node backend endpoint
+      const response = await api.post("/vision", { imageBase64: imagePreview });
+      
+      // Update the form state with Gemini's actual analysis!
       setData({
         ...data,
-        title: "Severe Road Infrastructure Damage",
-        description: "AI Analysis: Detected a deep pothole/road degradation spanning approximately 2 feet. Poses an immediate hazard to two-wheeler vehicles and requires urgent asphalt patching."
+        title: response.data.title,
+        description: response.data.description
       });
+      
+    } catch (error) {
+      console.error("Vision API Error:", error);
+      alert("Nova AI couldn't process this image right now. Please enter the details manually.");
+    } finally {
+      // Always stop the scanning animation whether it succeeds or fails
       setIsScanning(false);
-    }, 2500);
+    }
   };
 
   const post = async (e) => {

@@ -4,6 +4,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
+// Import this at the top of your backend file
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+// Initialize Gemini (Make sure to add GEMINI_API_KEY to your backend .env file!)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.use(express.json({ limit: '10mb' })); // Increased limit for Base64 images!
 app.use(cors());
 
@@ -470,6 +474,48 @@ app.post('/api/ai/chat', async (req, res) => {
         console.error("AI Error:", error);
         res.status(500).json({ error: "Failed to process AI request." });
     }
+});
+
+// THE NEW AI ENDPOINT
+app.post("/api/vision", async (req, res) => {
+  try {
+    const { imageBase64 } = req.body;
+    
+    if (!imageBase64) {
+      return res.status(400).json({ error: "No image provided" });
+    }
+
+    // Strip the "data:image/jpeg;base64," prefix so Gemini can read the raw data
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+
+    // We use the flash model because it is highly optimized for fast image processing
+    const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
+    
+    const prompt = `You are an expert civic infrastructure AI assistant named Nova AI. 
+    Analyze this image of a civic issue (e.g., pothole, broken pipe, illegal dumping). 
+    Provide a short, clear title (max 6 words). 
+    Provide a detailed description explaining what the issue is, the potential hazard to citizens, and the recommended civic action.
+    
+    You MUST return ONLY a valid JSON object in this exact format, with no other text or markdown:
+    {"title": "your title here", "description": "your description here"}`;
+
+    const result = await model.generateContent([
+      prompt,
+      { inlineData: { data: base64Data, mimeType: "image/jpeg" } }
+    ]);
+
+    const responseText = result.response.text();
+    
+    // Clean up the response in case Gemini wraps it in markdown code blocks
+    const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const aiData = JSON.parse(cleanJson);
+
+    res.json(aiData);
+    
+  } catch (error) {
+    console.error("AI Vision Error:", error);
+    res.status(500).json({ error: "Nova AI failed to analyze the image." });
+  }
 });
 
 // --- START SERVER ---
