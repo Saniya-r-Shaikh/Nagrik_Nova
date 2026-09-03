@@ -720,7 +720,7 @@ function Dashboard({ user }) {
   
   const [isScanning, setIsScanning] = useState(false);
 
-  // THE FIX: Detect if the user is on a mobile device (Android/iOS)
+  // Detect if the user is on a mobile device (Android/iOS)
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   useEffect(() => {
@@ -740,7 +740,6 @@ function Dashboard({ user }) {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Create a FileReader to read the massive original image
     const reader = new FileReader();
     reader.readAsDataURL(file);
     
@@ -749,10 +748,8 @@ function Dashboard({ user }) {
       img.src = event.target.result;
       
       img.onload = () => {
-        // Create a dynamic canvas to compress the image
         const canvas = document.createElement("canvas");
         
-        // Set max width to 1200px to maintain quality but drop file size drastically
         const MAX_WIDTH = 1200;
         let width = img.width;
         let height = img.height;
@@ -765,42 +762,14 @@ function Dashboard({ user }) {
         canvas.width = width;
         canvas.height = height;
 
-        // Draw the resized image onto the canvas
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Inside handleImageUpload, look for the bottom where we save the canvas:
-
-        // Compress it to a JPEG at 70% quality 
         const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
-        // THE FIX: Wipe the old title and description so the Auto-Fill button comes back!
+        // Wipe the old title and description so the Auto-Fill button comes back
         setData({ ...data, imageUrl: compressedBase64, title: "", description: "" });
         setImagePreview(compressedBase64);
-
-{/* MOBILE-ONLY ADD-ON: Hardware specific AI Scanner */}
-          {isMobile && (
-            <div style={{ padding: '18px', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '12px' }}>
-              <h4 style={{ margin: '0 0 8px 0', color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
-                <BrainCircuit size={18} /> Mobile AI Scanner
-              </h4>
-              <p style={{ fontSize: '12px', margin: '0 0 15px 0', color: 'var(--muted)', lineHeight: '1.5' }}>
-                Skip typing. Snap a live photo of the issue and let Nova AI auto-fill the report details for you.
-              </p>
-              
-              {/* THE FIX: Smart button that checks for the image */}
-<label className="btn full" style={{ cursor: 'pointer', margin: 0, justifyContent: 'center' }}>
-  <Sparkles size={16} /> {imagePreview ? "Take Photo Again" : "Open Camera"}
-  <input 
-    type="file" 
-    accept="image/*" 
-    capture="environment"
-    onChange={handleImageUpload} 
-    style={{ display: 'none' }} 
-  />
-</label>
-            </div>
-          )}
       };
     };
   };
@@ -812,10 +781,8 @@ function Dashboard({ user }) {
     setIsScanning(true);
     
     try {
-      // Send the compressed Base64 image to our new real Node backend endpoint
       const response = await api.post("/vision", { imageBase64: imagePreview });
       
-      // Update the form state with Gemini's actual analysis!
       setData({
         ...data,
         title: response.data.title,
@@ -826,7 +793,6 @@ function Dashboard({ user }) {
       console.error("Vision API Error:", error);
       alert("Nova AI couldn't process this image right now. Please enter the details manually.");
     } finally {
-      // Always stop the scanning animation whether it succeeds or fails
       setIsScanning(false);
     }
   };
@@ -880,7 +846,6 @@ function Dashboard({ user }) {
             Be specific. Your details help partners understand where action is needed.
           </p>
           
-          {/* STANDARD UPLOAD: Always visible to everyone (PC and Mobile) */}
           <label>
             Attach a photo (Optional)
             <input 
@@ -891,7 +856,6 @@ function Dashboard({ user }) {
             />
           </label>
 
-          {/* MOBILE-ONLY ADD-ON: Hardware specific AI Scanner */}
           {isMobile && (
             <div style={{ padding: '18px', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '12px' }}>
               <h4 style={{ margin: '0 0 8px 0', color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
@@ -901,8 +865,9 @@ function Dashboard({ user }) {
                 Skip typing. Snap a live photo of the issue and let Nova AI auto-fill the report details for you.
               </p>
               
+              {/* THE FIX: Button correctly swaps text based on image preview! */}
               <label className="btn full" style={{ cursor: 'pointer', margin: 0, justifyContent: 'center' }}>
-                <Sparkles size={16} /> Open Camera
+                <Sparkles size={16} /> {imagePreview ? "Take Photo Again" : "Open Camera"}
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -927,7 +892,6 @@ function Dashboard({ user }) {
             </div>
           )}
 
-          {/* AI AUTO-FILL BUTTON (Only appears on mobile after a photo is attached) */}
           {isMobile && imagePreview && !isScanning && !data.title && (
             <button 
               onClick={runAIVision} 
