@@ -736,23 +736,47 @@ function Dashboard({ user }) {
       );
   }, [user.id]);
 
-  const handleImageUpload = async (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
-    if (file.size > 4000000) {
-      alert("Image is too large! Please choose a smaller photo.");
-      return;
-    }
 
-    try {
-      const base64 = await convertToBase64(file);
-      setData({ ...data, imageUrl: base64 });
-      setImagePreview(base64);
-    } catch (error) {
-      console.error("Error converting image:", error);
-      alert("Failed to process the image.");
-    }
+    // Create a FileReader to read the massive original image
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      
+      img.onload = () => {
+        // Create a dynamic canvas to compress the image
+        const canvas = document.createElement("canvas");
+        
+        // Set max width to 1200px to maintain quality but drop file size drastically
+        const MAX_WIDTH = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw the resized image onto the canvas
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Compress it to a JPEG at 70% quality 
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+
+        // Save the newly compressed, lightweight image to state
+        setData({ ...data, imageUrl: compressedBase64 });
+        setImagePreview(compressedBase64);
+      };
+    };
   };
 
   const runAIVision = (e) => {
