@@ -489,14 +489,15 @@ app.post("/api/vision", async (req, res) => {
     // We use the flash model because it is highly optimized for fast image processing
     const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
     
-    const prompt = `You are an expert civic infrastructure AI assistant named Nova AI. 
-    Analyze this image of a civic issue (e.g., pothole, broken pipe, illegal dumping). 
-    Provide a short, clear title (max 6 words). 
-    Provide a detailed description explaining what the issue is, the potential hazard to citizens, and the recommended civic action.
-    
-    You MUST return ONLY a valid JSON object in this exact format, with no other text or markdown:
-    {"title": "your title here", "description": "your description here"}`;
+    // THE FIX: Updated prompt to strictly exclude recommendations
+const prompt = `You are an expert civic infrastructure AI assistant named Nova AI. 
+Analyze this image of a civic issue (e.g., pothole, broken pipe, illegal dumping). 
+Provide a short, clear title (max 6 words). 
+Provide a detailed description explaining exactly what the issue is and the potential hazard to citizens. 
+CRITICAL: DO NOT provide any solutions, fixes, or recommended civic actions. Leave that for the admin team.
 
+You MUST return ONLY a valid JSON object in this exact format, with no other text or markdown:
+{"title": "your title here", "description": "your description here"}`;
     const result = await model.generateContent([
       prompt,
       { inlineData: { data: base64Data, mimeType: "image/jpeg" } }
