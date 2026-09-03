@@ -828,6 +828,13 @@ body.dark-mode .tracker-node.active .node-label {
   color: #ffffff !important; /* Pure white for active steps */
 }
 
+/* THE FIX: Force the endorsed button text to pop in dark mode */
+body.dark-mode button.upvoted {
+  color: #ffffff !important; /* Pure white text */
+  background: rgba(76, 175, 80, 0.25) !important; /* Slightly brighter green fill */
+  border-color: #6ee7b7 !important; /* Bright mint green border */
+}
+
 /* ========================================= */
 /* --- SOLID OPAQUE: TOP NAVIGATION BAR  --- */
 /* ========================================= */
