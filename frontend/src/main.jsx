@@ -769,12 +769,38 @@ function Dashboard({ user }) {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
 
+        // Inside handleImageUpload, look for the bottom where we save the canvas:
+
         // Compress it to a JPEG at 70% quality 
         const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
-        // Save the newly compressed, lightweight image to state
-        setData({ ...data, imageUrl: compressedBase64 });
+        // THE FIX: Wipe the old title and description so the Auto-Fill button comes back!
+        setData({ ...data, imageUrl: compressedBase64, title: "", description: "" });
         setImagePreview(compressedBase64);
+        
+{/* MOBILE-ONLY ADD-ON: Hardware specific AI Scanner */}
+          {isMobile && (
+            <div style={{ padding: '18px', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '12px' }}>
+              <h4 style={{ margin: '0 0 8px 0', color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                <BrainCircuit size={18} /> Mobile AI Scanner
+              </h4>
+              <p style={{ fontSize: '12px', margin: '0 0 15px 0', color: 'var(--muted)', lineHeight: '1.5' }}>
+                Skip typing. Snap a live photo of the issue and let Nova AI auto-fill the report details for you.
+              </p>
+              
+              {/* THE FIX: Dynamically change button text if an image is already attached */}
+              <label className="btn full" style={{ cursor: 'pointer', margin: 0, justifyContent: 'center' }}>
+                <Sparkles size={16} /> {imagePreview ? "Take Photo Again" : "Open Camera"}
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  capture="environment"
+                  onChange={handleImageUpload} 
+                  style={{ display: 'none' }} 
+                />
+              </label>
+            </div>
+          )}
       };
     };
   };
