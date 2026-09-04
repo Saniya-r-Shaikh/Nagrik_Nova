@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { XR, XRDomOverlay, createXRStore } from "@react-three/xr";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
-// 1. The Premium Holographic Marker
 function HologramPin({ position }) {
   const groupRef = useRef();
 
@@ -28,7 +28,6 @@ function HologramPin({ position }) {
   );
 }
 
-// 2. Mathematical Placement (100% Crash-Proof)
 function ARSceneManager({ stagedPin, setStagedPin, setInAR }) {
   const { gl } = useThree();
 
@@ -50,7 +49,6 @@ function ARSceneManager({ stagedPin, setStagedPin, setInAR }) {
     xrCamera.getWorldPosition(pos);
     const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(xrCamera.quaternion);
 
-    // Drops pin exactly 1.5 meters away from the camera lens
     pos.add(dir.multiplyScalar(1.5));
     pos.y -= 0.4;
 
@@ -69,17 +67,15 @@ function ARSceneManager({ stagedPin, setStagedPin, setInAR }) {
   );
 }
 
-// 3. The Main UI Component
 export default function ARReporter({ onLocationSaved }) {
   const [stagedPin, setStagedPin] = useState(null);
   const [inAR, setInAR] = useState(false);
   const [geo, setGeo] = useState(null);
-  const [geoStatus, setGeoStatus] = useState("idle"); // idle | locating | ready | unavailable
+  const [geoStatus, setGeoStatus] = useState("idle");
+  const [isDesktopMode, setIsDesktopMode] = useState(false);
 
   const [store] = useState(() => createXRStore());
 
-  // As soon as a pin is dropped, request a GPS fix in parallel so it's
-  // (hopefully) ready by the time the user hits Confirm.
   useEffect(() => {
     if (!stagedPin) {
       setGeo(null);
@@ -105,104 +101,145 @@ export default function ARReporter({ onLocationSaved }) {
     );
   }, [stagedPin]);
 
-  const startAR = () => {
+  const startAR = async () => {
+    const supported = navigator.xr ? await navigator.xr.isSessionSupported("immersive-ar") : false;
+    
+    if (!supported) {
+      setIsDesktopMode(true);
+      setStagedPin({ x: 0, y: 0, z: -2 });
+      return;
+    }
+
     setStagedPin(null);
     setInAR(true);
     store.enterAR();
   };
 
   const handleConfirm = () => {
-    onLocationSaved({ ...stagedPin, ...geo });
+    onLocationSaved({ 
+      x: stagedPin?.x || 0, 
+      y: stagedPin?.y || 0, 
+      z: stagedPin?.z || 0, 
+      ...geo 
+    });
     setInAR(false);
-    store.getState().session?.end();
+    setIsDesktopMode(false);
+    setStagedPin(null);
+    if (store.getState().session) {
+      store.getState().session.end();
+    }
   };
 
   return (
     <div style={{ width: "100%", height: "400px", position: "relative", borderRadius: "10px", overflow: "hidden", border: "2px solid #333", background: "#111" }}>
 
-      {!inAR && (
-        <div style={{ padding: "30px", textAlign: "center", color: "white" }}>
+      {!inAR && !isDesktopMode && (
+        <div style={{ padding: "40px 20px", textAlign: "center", color: "white" }}>
           <h3 style={{ margin: "0 0 10px 0" }}>AR Spatial Issue Scanner</h3>
           <p style={{ color: "#aaa", fontSize: "14px", marginBottom: "20px" }}>
-            Open the camera and tap the screen to anchor a high-precision 3D civic ticket.
+            Anchor a high-precision 3D civic ticket via mobile AR or desktop simulation.
           </p>
           <button
             type="button"
             onClick={startAR}
-            style={{ padding: "14px 28px", background: "#00e5ff", color: "black", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "16px", cursor: "pointer" }}
+            style={{ padding: "14px 28px", background: "#00e5ff", color: "black", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "16px", cursor: "pointer", boxShadow: "0 0 15px rgba(0,229,255,0.4)" }}
           >
-            📸 Launch AR Scanner
+            📸 Launch AR Spatial Scanner
           </button>
         </div>
       )}
 
-      <Canvas>
-        <XR store={store}>
-          <ARSceneManager stagedPin={stagedPin} setStagedPin={setStagedPin} setInAR={setInAR} />
+      {/* DESKTOP SIMULATION FALLBACK CANVAS */}
+      {isDesktopMode && (
+        <div style={{ width: "100%", height: "100%", position: "relative" }}>
+          <div style={{ position: "absolute", top: 10, left: 10, zIndex: 10, background: "rgba(0,0,0,0.8)", color: "#00e5ff", padding: "8px 12px", borderRadius: "6px", fontSize: "12px", border: "1px solid #00e5ff" }}>
+            🖥️ Desktop AR Simulator Active (Orbit & Inspect)
+          </div>
+          <Canvas camera={{ position: [0, 1, 3] }}>
+            <ambientLight intensity={2} />
+            <OrbitControls />
+            <gridHelper args={[10, 10, "#00e5ff", "#333"]} />
+            {stagedPin && <HologramPin position={stagedPin} />}
+          </Canvas>
+          <div style={{ position: "absolute", bottom: 15, left: "50%", transform: "translateX(-50%)", zIndex: 10, display: "flex", gap: "10px" }}>
+            <button type="button" onClick={() => setIsDesktopMode(false)} style={{ padding: "10px 20px", background: "#111", color: "#f44336", border: "1px solid #f44336", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
+              Cancel
+            </button>
+            <button type="button" onClick={handleConfirm} style={{ padding: "10px 20px", background: "#00e5ff", color: "#000", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>
+              ✓ Confirm Simulated Spatial Pin
+            </button>
+          </div>
+        </div>
+      )}
 
-          <XRDomOverlay>
-            <div style={{
-              position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-              display: "flex", flexDirection: "column", justifyContent: "space-between",
-              padding: "20px", boxSizing: "border-box", pointerEvents: "none"
-            }}>
+      {!isDesktopMode && (
+        <Canvas>
+          <XR store={store}>
+            <ARSceneManager stagedPin={stagedPin} setStagedPin={setStagedPin} setInAR={setInAR} />
 
+            <XRDomOverlay>
               <div style={{
-                background: "rgba(10, 10, 10, 0.85)", color: "#00e5ff", padding: "12px 20px",
-                borderRadius: "10px", border: "1px solid #00e5ff", textAlign: "center",
-                fontWeight: "bold", fontSize: "15px", pointerEvents: "auto", backdropFilter: "blur(5px)",
-                marginTop: "20px"
+                position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+                display: "flex", flexDirection: "column", justifyContent: "space-between",
+                padding: "20px", boxSizing: "border-box", pointerEvents: "none"
               }}>
-                {!stagedPin
-                  ? "🎯 Tap anywhere on the screen to anchor the ticket"
-                  : geoStatus === "locating"
-                  ? "📍 Ticket anchored — locking GPS…"
-                  : geoStatus === "ready"
-                  ? "📍 Ticket anchored — GPS locked"
-                  : "📍 Ticket anchored (AR-only, no GPS)"}
-              </div>
 
-              {/* ONLY CHANGED THIS BLOCK: Show Loader if locating, else show Buttons */}
-              {stagedPin && geoStatus === "locating" && (
-                <div style={{ display: "flex", justifyContent: "center", pointerEvents: "auto", marginBottom: "30px" }}>
-                  <div style={{
-                    padding: "16px 24px",
-                    background: "rgba(10, 10, 10, 0.85)",
-                    color: "#00e5ff",
-                    borderRadius: "10px",
-                    border: "1px solid #00e5ff",
-                    fontWeight: "bold",
-                    fontSize: "16px",
-                    backdropFilter: "blur(5px)"
-                  }}>
-                    ⏳ Locking GPS Coordinates...
+                <div style={{
+                  background: "rgba(10, 10, 10, 0.85)", color: "#00e5ff", padding: "12px 20px",
+                  borderRadius: "10px", border: "1px solid #00e5ff", textAlign: "center",
+                  fontWeight: "bold", fontSize: "15px", pointerEvents: "auto", backdropFilter: "blur(5px)",
+                  marginTop: "20px"
+                }}>
+                  {!stagedPin
+                    ? "🎯 Tap anywhere on the screen to anchor the ticket"
+                    : geoStatus === "locating"
+                    ? "📍 Ticket anchored — locking GPS…"
+                    : "📍 Ticket anchored — GPS locked"}
+                </div>
+
+                {/* --- THE FIX: SHOW LOADER WHILE LOCATING --- */}
+                {stagedPin && geoStatus === "locating" && (
+                  <div style={{ display: "flex", justifyContent: "center", pointerEvents: "auto", marginBottom: "30px" }}>
+                    <div style={{
+                      padding: "16px 24px",
+                      background: "rgba(10, 10, 10, 0.85)",
+                      color: "#00e5ff",
+                      borderRadius: "10px",
+                      border: "1px solid #00e5ff",
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                      backdropFilter: "blur(5px)"
+                    }}>
+                      ⏳ Locking GPS Coordinates...
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {stagedPin && geoStatus !== "locating" && (
-                <div style={{ display: "flex", gap: "15px", pointerEvents: "auto", marginBottom: "30px" }}>
-                  <button
-                    type="button"
-                    onClick={() => setStagedPin(null)}
-                    style={{ flex: 1, padding: "16px", background: "#111", color: "#f44336", border: "2px solid #f44336", borderRadius: "10px", fontSize: "16px", fontWeight: "bold" }}
-                  >
-                    ↻ Retake
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleConfirm}
-                    style={{ flex: 1, padding: "16px", background: "#00e5ff", color: "#000", border: "none", borderRadius: "10px", fontSize: "16px", fontWeight: "bold", boxShadow: "0 0 15px rgba(0, 229, 255, 0.5)" }}
-                  >
-                    ✓ Confirm & Save
-                  </button>
-                </div>
-              )}
+                {/* --- THE FIX: SHOW BUTTONS ONLY WHEN NOT LOCATING --- */}
+                {stagedPin && geoStatus !== "locating" && (
+                  <div style={{ display: "flex", gap: "15px", pointerEvents: "auto", marginBottom: "30px", justifyContent: "center" }}>
+                    <button
+                      type="button"
+                      onClick={() => setStagedPin(null)}
+                      style={{ padding: "16px 24px", background: "#111", color: "#f44336", border: "2px solid #f44336", borderRadius: "10px", fontSize: "16px", fontWeight: "bold", cursor: "pointer" }}
+                    >
+                      ↻ Retake
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleConfirm}
+                      style={{ padding: "16px 24px", background: "#00e5ff", color: "#000", border: "none", borderRadius: "10px", fontSize: "16px", fontWeight: "bold", cursor: "pointer", boxShadow: "0 0 15px rgba(0, 229, 255, 0.5)" }}
+                    >
+                      ✓ Confirm & Save
+                    </button>
+                  </div>
+                )}
 
-            </div>
-          </XRDomOverlay>
-        </XR>
-      </Canvas>
+              </div>
+            </XRDomOverlay>
+          </XR>
+        </Canvas>
+      )}
     </div>
   );
 }
