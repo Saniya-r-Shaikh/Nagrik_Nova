@@ -89,9 +89,10 @@ export default function Rewards({ user }) {
         {mockProducts.map((item) => (
           <div key={item.id} className="issue" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', minHeight: 'auto' }}>
             
-            <div style={{ fontSize: '40px', textAlign: 'center', padding: '20px', background: 'rgba(255, 255, 255, 0.4)', borderRadius: '12px', boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px' }}>
+            {/* THE FIX: Increased height to 220px, reduced padding to 10px, and bumped fallback emoji size! */}
+            <div style={{ fontSize: '70px', textAlign: 'center', padding: '10px', background: 'rgba(255, 255, 255, 0.4)', borderRadius: '12px', boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '220px' }}>
               {item.image ? (
-                <img src={item.image} alt={item.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                <img src={item.image} alt={item.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.1))' }} />
               ) : (
                 item.icon
               )}
