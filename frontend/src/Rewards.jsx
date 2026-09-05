@@ -6,11 +6,11 @@ const api = axios.create({ baseURL: 'https://nagrik-nova.onrender.com/api' });
 
 // THE FIX: Mapped the exact final image strings you provided.
 const mockProducts = [
-  { id: 1, name: "Nagrik Nova Official Supporter T-Shirt", price: 100, image: "/watermarked_img_2354946755341967162-removebg-preview_3.png" },
-  { id: 2, name: "LEGO Marvel Spider-Man Keyring", price: 150, image: "/854290_4.png" }, 
-  { id: 3, name: "Domino's Pizza ₹500 E-Voucher", price: 300, image: "/32a0d627-ade5-4988-8936-330a4b22d6a4-removebg-preview_3.png" },
-  { id: 4, name: "OnePlus Nord 4 Custom Back Cover", price: 400, image: "/868e78b2-bba0-48f0-9482-4c0d2e7fb608-removebg-preview_3.png" },
-  { id: 5, name: "boAt Airdopes 141 TWS Wireless Earphones", price: 800, image: "/images-removebg-preview_3.png" }
+  { id: 1, name: "Nagrik Nova Official Supporter T-Shirt", price: 100, image: "/watermarked_img_2354946755341967162-removebg-preview.png" },
+  { id: 2, name: "LEGO Marvel Spider-Man Keyring", price: 150, image: "/854290.png" }, 
+  { id: 3, name: "Domino's Pizza ₹500 E-Voucher", price: 300, image: "/32a0d627-ade5-4988-8936-330a4b22d6a4-removebg-preview.png" },
+  { id: 4, name: "OnePlus Nord 4 Custom Back Cover", price: 400, image: "/868e78b2-bba0-48f0-9482-4c0d2e7fb608-removebg-preview.png" },
+  { id: 5, name: "boAt Airdopes 141 TWS Wireless Earphones", price: 800, image: "/images-removebg-preview.png" }
 ];
 
 export default function Rewards({ user }) {
