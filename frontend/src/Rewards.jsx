@@ -2,21 +2,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Award, Gift, Coins, CheckCircle2, Sparkles, Package, Clock } from "lucide-react";
 
-// Local image imports for public assets
-import image_6 from "./Nagrik Nova Official Supporter T-Shirt.png"; // Public link to the T-shirt image
-import image_7 from "./boAt Airdopes 141 TWS Wireless Earphones.png"; // Public link to the earphones image
-import image_8 from "./OnePlus Nord 4 Custom Back Cover.png"; // Public link to the back cover image
-import image_9 from "./Domino's Pizza ₹500 E-Voucher.png"; // Public link to the pizza voucher image
-
 const api = axios.create({ baseURL: 'https://nagrik-nova.onrender.com/api' });
 
-// THE FIX: Updated mock products data to replace icons with actual images. Keyring remains an emoji as no image was provided.
+// THE FIX: Removed the broken local imports. 
+// Directly pointing to the transparent images in your public folder!
 const mockProducts = [
-  { id: 1, name: "Nagrik Nova Official Supporter T-Shirt", price: 100, image: image_6 },
-  { id: 2, name: "LEGO Marvel Spider-Man Keyring", price: 150, icon: "🕷️" },
-  { id: 3, name: "Domino's Pizza ₹500 E-Voucher", price: 300, image: image_9 },
-  { id: 4, name: "OnePlus Nord 4 Custom Back Cover", price: 400, image: image_8 },
-  { id: 5, name: "boAt Airdopes 141 TWS Wireless Earphones", price: 800, image: image_7 }
+  { id: 1, name: "Nagrik Nova Official Supporter T-Shirt", price: 100, image: "/watermarked_img_2354946755341967162-removebg-preview.png" },
+  { id: 2, name: "LEGO Marvel Spider-Man Keyring", price: 150, icon: "🕷️" }, 
+  { id: 3, name: "Domino's Pizza ₹500 E-Voucher", price: 300, image: "/32a0d627-ade5-4988-8936-330a4b22d6a4-removebg-preview.png" },
+  { id: 4, name: "OnePlus Nord 4 Custom Back Cover", price: 400, image: "/868e78b2-bba0-48f0-9482-4c0d2e7fb608-removebg-preview.png" },
+  { id: 5, name: "boAt Airdopes 141 TWS Wireless Earphones", price: 800, image: "/images-removebg-preview.png" }
 ];
 
 export default function Rewards({ user }) {
@@ -32,7 +27,6 @@ export default function Rewards({ user }) {
         .catch(err => console.error("Could not fetch wallet", err))
         .finally(() => setLoading(false));
 
-      // Load the user's order history from LocalStorage
       const savedOrders = JSON.parse(localStorage.getItem(`nn-orders-${userId}`) || "[]");
       setOrders(savedOrders);
     }
@@ -40,26 +34,24 @@ export default function Rewards({ user }) {
 
   const handleRedeem = async (e, item) => {
     e.preventDefault();
-    e.stopPropagation(); // Forces immediate click, ignoring the card hover state
+    e.stopPropagation();
 
     if (balance >= item.price) {
-      // THE FIX: Added the specific confirmation popup you requested
       const confirmRedeem = window.confirm(`Do you want to redeem '${item.name}' for ${item.price} Nova Coins?`);
       
-      if (!confirmRedeem) return; // Stop if they click cancel
+      if (!confirmRedeem) return; 
 
       try {
         const res = await api.post(`/users/${userId}/redeem`, { cost: item.price });
         setBalance(res.data.coins);
 
-        // Generate a new mock order and save it!
         const newOrder = {
           orderId: `ORD-${Math.floor(Math.random() * 100000)}`,
           name: item.name,
           date: new Date().toLocaleDateString(),
           status: "Processing",
-          icon: item.icon, // Keep emoji as fallback
-          image: item.image // Add product image for history
+          icon: item.icon, 
+          image: item.image 
         };
         
         const updatedOrders = [newOrder, ...orders];
@@ -97,7 +89,7 @@ export default function Rewards({ user }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '30px' }}>
         {mockProducts.map((item) => (
           <div key={item.id} className="issue" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', minHeight: 'auto' }}>
-            {/* THE FIX: Render image if present, else fallback to icon */}
+            
             <div style={{ fontSize: '40px', textAlign: 'center', padding: '20px', background: 'rgba(255, 255, 255, 0.4)', borderRadius: '12px', boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '120px' }}>
               {item.image ? (
                 <img src={item.image} alt={item.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
@@ -105,7 +97,9 @@ export default function Rewards({ user }) {
                 item.icon
               )}
             </div>
+            
             <h3 style={{ margin: 0, fontSize: '18px' }}>{item.name}</h3>
+            
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
               <span style={{ fontWeight: 'bold', color: 'var(--green)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <Sparkles size={16}/> {item.price} Coins
@@ -138,7 +132,7 @@ export default function Rewards({ user }) {
             {orders.map((order) => (
               <div key={order.orderId} className="issue" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 20px', minHeight: 'auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  {/* THE FIX: Updated order history to display the thumbnail images too */}
+                  
                   <div style={{ width: '60px', height: '60px', background: 'rgba(255,255,255,0.8)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     {order.image ? (
                        <img src={order.image} alt={order.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
@@ -146,6 +140,7 @@ export default function Rewards({ user }) {
                        <span style={{ fontSize: '24px' }}>{order.icon}</span>
                     )}
                   </div>
+                  
                   <div>
                     <h4 style={{ margin: 0 }}>{order.name}</h4>
                     <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>Order ID: {order.orderId} • Placed on {order.date}</div>
