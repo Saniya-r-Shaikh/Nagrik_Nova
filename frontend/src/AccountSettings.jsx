@@ -3,10 +3,7 @@ import { User, Lock, Trash2, Save, ArrowLeft, ShieldAlert, Pencil, X } from "luc
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
-
-const api = axios.create({ baseURL: API_URL });
+const api = axios.create({ baseURL: 'https://nagrik-nova.onrender.com/api' });
 api.interceptors.request.use((c) => {
   const t = localStorage.getItem("nn-token");
   if (t) c.headers.Authorization = `Bearer ${t}`;
@@ -21,14 +18,14 @@ export default function AccountSettings({ user, auth }) {
     phone: user?.phone || "",
     address: user?.address || "",
   });
-
+  
   const [editState, setEditState] = useState({
     name: false,
     email: false,
     phone: false,
     address: false,
   });
-
+  
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [saving, setSaving] = useState(false);
@@ -45,55 +42,34 @@ export default function AccountSettings({ user, auth }) {
 
   const handleSave = async (e) => {
     e.preventDefault();
-
     setSaving(true);
     setMsg("");
     setErr("");
-
+    
     try {
-      const userId = user?.id;
-
-      if (!userId) {
-        throw new Error("User ID is missing. Please sign in again.");
-      }
-
-      const response = await api.put(`/users/${userId}`, {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        address: formData.address.trim(),
+      const userId = user.id || user._id;
+      await api.put(`/users/${userId}`, {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address
       });
 
-      console.log("PROFILE UPDATE RESPONSE:", response.data);
-
-      // Backend returns { message, user }
-      const updatedUser = response.data.user;
-
-      if (!updatedUser) {
-        throw new Error("Server did not return the updated user.");
-      }
-
-      // Update localStorage + React state
-      auth.updateUser(updatedUser);
-
-      setMsg("Profile updated successfully!");
-
-      setEditState({
-        name: false,
-        email: false,
-        phone: false,
-        address: false,
+      auth.updateUser({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address
       });
+      
+      setMsg("Profile updated successfully in the database!");
+      setEditState({ name: false, email: false, phone: false, address: false });
     } catch (error) {
-      console.error("SAVE PROFILE ERROR:", error);
-      console.error("STATUS:", error.response?.status);
-      console.error("SERVER RESPONSE:", error.response?.data);
-
-      setErr(
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to save profile changes."
-      );
+      console.error("Save error:", error);
+      setErr("Failed to save to database.");
+      auth.updateUser({
+        name: formData.name, email: formData.email, phone: formData.phone, address: formData.address
+      });
     } finally {
       setSaving(false);
     }
@@ -118,9 +94,7 @@ export default function AccountSettings({ user, auth }) {
   };
 
   const handleDelete = async () => {
-    const confirm = window.confirm(
-      "Are you absolutely sure? This will permanently delete your account. Previously submitted civic reports may remain in the system but will no longer be linked to your account. This action cannot be undone."
-    );
+    const confirm = window.confirm("Are you absolutely sure? This will permanently delete your account and all reported civic issues. This action cannot be undone.");
     if (confirm) {
       try {
         const userId = user.id || user._id;
@@ -146,7 +120,7 @@ export default function AccountSettings({ user, auth }) {
       <Link className="back" to="/dashboard" style={{ display: 'inline-flex', marginBottom: '20px' }}>
         <ArrowLeft size={16} style={{ marginRight: '5px' }} /> Back to Dashboard
       </Link>
-
+      
       <div className="page-head" style={{ marginBottom: '30px' }}>
         <div className="eyebrow"><User size={15} /> Customer Lifecycle</div>
         <h1>Account <em>Settings</em></h1>
@@ -154,47 +128,47 @@ export default function AccountSettings({ user, auth }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-
+        
         {/* Profile Settings */}
         <div className="issue" style={{ padding: '30px', minHeight: 'auto' }}>
           <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', margin: '0 0 20px 0' }}>
             <User size={20} /> Personal Information
           </h2>
           <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-
+            
             <div className="two">
               <label>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Full Name
+                  Full Name 
                   <button type="button" onClick={() => toggleEdit('name')} style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'flex' }} title={editState.name ? "Lock" : "Edit"}>
                     {editState.name ? <X size={14} color="#ef4444" /> : <Pencil size={14} color="#10b981" />}
                   </button>
                 </span>
-                <input required type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!editState.name} style={inputStyle(editState.name)} />
+                <input required type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} disabled={!editState.name} style={inputStyle(editState.name)} />
               </label>
-
+              
               <label>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Email Address
+                  Email Address 
                   <button type="button" onClick={() => toggleEdit('email')} style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'flex' }} title={editState.email ? "Lock" : "Edit"}>
                     {editState.email ? <X size={14} color="#ef4444" /> : <Pencil size={14} color="#10b981" />}
                   </button>
                 </span>
-                <input required type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} disabled={!editState.email} style={inputStyle(editState.email)} />
+                <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} disabled={!editState.email} style={inputStyle(editState.email)} />
               </label>
             </div>
 
             <div className="two">
               <label>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Phone Number
+                  Phone Number 
                   <button type="button" onClick={() => toggleEdit('phone')} style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'flex' }} title={editState.phone ? "Lock" : "Edit"}>
                     {editState.phone ? <X size={14} color="#ef4444" /> : <Pencil size={14} color="#10b981" />}
                   </button>
                 </span>
-                <input type="text" placeholder="Add your phone number" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} disabled={!editState.phone} style={inputStyle(editState.phone)} />
+                <input type="text" placeholder="Add your phone number" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} disabled={!editState.phone} style={inputStyle(editState.phone)} />
               </label>
-
+              
               <label>
                 Role
                 <input type="text" value={user?.role} disabled style={inputStyle(false)} />
@@ -203,17 +177,17 @@ export default function AccountSettings({ user, auth }) {
 
             <label>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                Address
+                Address 
                 <button type="button" onClick={() => toggleEdit('address')} style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'flex' }} title={editState.address ? "Lock" : "Edit"}>
                   {editState.address ? <X size={14} color="#ef4444" /> : <Pencil size={14} color="#10b981" />}
                 </button>
               </span>
-              <input type="text" placeholder="Add your residential address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} disabled={!editState.address} style={inputStyle(editState.address)} />
+              <input type="text" placeholder="Add your residential address" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} disabled={!editState.address} style={inputStyle(editState.address)} />
             </label>
-
+            
             {msg && <div className="success" style={{ margin: 0 }}>{msg}</div>}
             {err && <div className="error" style={{ margin: 0 }}>{err}</div>}
-
+            
             <button type="submit" className="btn" disabled={saving || !Object.values(editState).some(Boolean)} style={{ alignSelf: 'flex-start', marginTop: '10px' }}>
               <Save size={16} /> {saving ? "Saving..." : "Save Changes"}
             </button>
@@ -226,16 +200,16 @@ export default function AccountSettings({ user, auth }) {
             <Lock size={20} /> Security & Authentication
           </h2>
           <p style={{ color: 'var(--muted)', marginBottom: '20px' }}>Update your password to keep your account secure.</p>
-
+          
           <form onSubmit={handlePasswordUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '400px' }}>
             <label style={{ position: 'relative' }}>
               New Password
-              <input
-                required
-                type={showPass ? "text" : "password"}
+              <input 
+                required 
+                type={showPass ? "text" : "password"} 
                 minLength="6"
                 placeholder="Enter at least 6 characters"
-                value={newPassword}
+                value={newPassword} 
                 onChange={(e) => setNewPassword(e.target.value)}
                 style={{ width: '100%', paddingRight: '40px' }}
               />
@@ -244,13 +218,13 @@ export default function AccountSettings({ user, auth }) {
                 onClick={() => setShowPass(!showPass)}
                 style={{ position: 'absolute', right: '12px', bottom: '12px', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0 }}
               >
-                {showPass ? <X size={18} /> : <Lock size={18} />}
+                {showPass ? <X size={18} /> : <Lock size={18} />} 
               </button>
             </label>
-
+            
             {passMsg && <div className="success" style={{ margin: 0 }}>{passMsg}</div>}
             {passErr && <div className="error" style={{ margin: 0 }}>{passErr}</div>}
-
+            
             <button type="submit" className="btn small" disabled={savingPass || !newPassword}>
               <Lock size={16} /> {savingPass ? "Encrypting..." : "Update Password"}
             </button>
@@ -263,7 +237,7 @@ export default function AccountSettings({ user, auth }) {
             <ShieldAlert size={20} /> Danger Zone
           </h2>
           <p style={{ color: 'var(--muted)', marginBottom: '20px' }}>
-            Permanently remove your personal account from the Nagrik Nova platform. Previously submitted civic reports may remain in the system but will no longer be linked to your account. This action is not reversible.
+            Permanently remove your Personal Account and all of its content from the Nagrik Nova platform. This action is not reversible.
           </p>
           <button onClick={handleDelete} className="btn small" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid #ef4444' }}>
             <Trash2 size={16} /> Delete Account
