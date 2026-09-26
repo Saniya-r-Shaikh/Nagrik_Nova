@@ -584,5 +584,46 @@ You MUST return ONLY a valid JSON object in this exact format, with no other tex
   }
 });
 
+// --- CUSTOMER LIFECYCLE ROUTES ---
+app.put("/api/users/:id", async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id, 
+      { name: req.body.name, email: req.body.email, phone: req.body.phone, address: req.body.address }, 
+      { new: true }
+    );
+    if (!updatedUser) return res.status(404).json({ message: "User not found" });
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Server error updating profile" });
+  }
+});
+
+app.put("/api/users/:id/password", async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters." });
+    
+    // Ensure bcrypt is imported at the top of your server.js!
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    
+    await User.findByIdAndUpdate(req.params.id, { password: hashedPassword });
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error updating password" });
+  }
+});
+
+app.delete("/api/users/:id", async (req, res) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    if (!deletedUser) return res.status(404).json({ message: "User not found" });
+    res.json({ message: "Account deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error deleting account" });
+  }
+});
+
 // --- START SERVER ---
 app.listen(5000, () => console.log('Server live on port 5000'));

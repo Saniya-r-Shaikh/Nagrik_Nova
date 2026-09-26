@@ -30,7 +30,6 @@ export default function AccountSettings({ user, auth }) {
   const [err, setErr] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Password state variables
   const [newPassword, setNewPassword] = useState("");
   const [passMsg, setPassMsg] = useState("");
   const [passErr, setPassErr] = useState("");
@@ -76,7 +75,6 @@ export default function AccountSettings({ user, auth }) {
     }
   };
 
-  // THE MISSING FUNCTION: Handles password updates safely
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
     setSavingPass(true);
