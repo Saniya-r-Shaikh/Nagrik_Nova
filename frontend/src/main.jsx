@@ -1,7 +1,10 @@
 import ARReporter from "./ARReporter";
 import VRCommandCenter from "./VRCommandCenter";
+import VoiceInput from "./VoiceInput.jsx";
 import React, { useEffect, useState } from "react";
+import AIChatWidget from "./AIChatWidget.jsx";
 import { createRoot } from "react-dom/client";
+import AccountSettings from "./AccountSettings.jsx";
 import {
   BrowserRouter,
   Link,
@@ -30,8 +33,9 @@ import {
   X,
 } from "lucide-react";
 import "./styles.css";
+import CitizenMap from "./CitizenMap.jsx";
 import Footer from "./Footer";
-const api = axios.create({ baseURL: `http://${window.location.hostname}:5000/api` });
+export const api = axios.create({ baseURL: import.meta.env.VITE_API_URL });
 api.interceptors.request.use((c) => {
   const t = localStorage.getItem("nn-token");
   if (t) c.headers.Authorization = `Bearer ${t}`;
@@ -41,6 +45,12 @@ const useAuth = () => {
   const [user, setUser] = useState(() =>
     JSON.parse(localStorage.getItem("nn-user") || "null"),
   );
+
+  const updateUser = (updatedUser) => {
+    localStorage.setItem("nn-user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
   const signIn = (d) => {
     localStorage.setItem("nn-token", d.token);
     localStorage.setItem("nn-user", JSON.stringify(d.user));
@@ -50,10 +60,11 @@ const useAuth = () => {
     localStorage.clear();
     setUser(null);
   };
-  return { user, signIn, out };
+  return { user, signIn,updateUser, out };
 };
 function App() {
   const auth = useAuth();
+  const { user } = auth;
   return (
     <>
       <Nav auth={auth} />
@@ -78,7 +89,15 @@ function App() {
                 <Detail user={auth.user} />
               </Require>
             }
+          /><Route
+            path="/citizen-map"
+            element={
+              <Require user={auth.user}>
+                <CitizenMap />
+              </Require>
+            }
           />
+
           <Route
             path="/dashboard"
             element={
@@ -87,8 +106,43 @@ function App() {
               </Require>
             }
           />
+
+          <Route
+            path="/settings"
+            element={
+              <Require user={auth.user}>
+                <AccountSettings user={auth.user} auth={auth} />
+              </Require>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              user?.role === "admin"
+                ? <AdminDashboard />
+                : <Navigate to="/login" replace />
+            }
+          />
+
+          <Route
+            path="/organization"
+            element={
+              user &&
+                ["university", "industry", "ngo"].includes(
+                  user.role
+                ) ? (
+                <OrganizationDashboard user={user} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
         </Routes>
       </main>
+
+      <AIChatWidget />
+
       <Footer />
     </>
   );
@@ -113,13 +167,28 @@ function Nav({ auth }) {
       </button>
       <nav className={open ? "show" : ""}>
         <NavLink to="/issues">Explore issues</NavLink>
+        <NavLink to="/citizen-map">Live Map</NavLink>
         {auth.user && ["citizen", "ngo"].includes(auth.user.role) && (
           <NavLink to="/dashboard">My dashboard</NavLink>
         )}
+
+        {auth.user &&
+          ["university", "industry", "ngo"].includes(
+            auth.user.role
+          ) && (
+            <NavLink to="/organization">
+              My Challenges
+            </NavLink>
+          )}
         {auth.user && auth.user.role === "admin" && (
-          <NavLink to="/vr-map" className="vr-link">
-            <Sparkles size={15} /> VR Command Center
-          </NavLink>
+          <>
+            <NavLink to="/admin">Admin</NavLink>
+
+            <NavLink to="/vr-map" className="vr-link">
+              <Sparkles size={15} /> VR Command Center
+            </NavLink>
+          </>
+
         )}
         {auth.user ? (
           <>
@@ -129,6 +198,11 @@ function Nav({ auth }) {
                 .map((x) => x[0])
                 .slice(0, 2)}
             </span>
+
+            <NavLink to="/settings">
+              Settings
+            </NavLink>
+
             <button className="text-btn" onClick={auth.out}>
               Sign out
             </button>
@@ -292,7 +366,7 @@ function Login({ auth }) {
   const go = async (e) => {
     e.preventDefault();
     try {
-      auth.signIn((await api.post("/auth/login", data)).data);
+      auth.signIn((await api.post("/auth/login", { ...data, email: data.email.trim().toLowerCase() })).data);
       nav("/issues");
     } catch (e) {
       setErr(e.response?.data?.message || "Could not sign in.");
@@ -390,12 +464,14 @@ function Register({ auth }) {
           />
           <Field
             label="Phone"
+            required={false}
             value={d.phone || ""}
             onChange={(e) => set("phone", e.target.value)}
           />
         </div>
         <Field
           label="Address"
+          required={false}
           value={d.address || ""}
           onChange={(e) => set("address", e.target.value)}
         />
@@ -466,7 +542,7 @@ function Issues() {
       ) : (
         <div className="issue-grid">
           {items.map((i) => (
-            <IssueCard key={i._id} issue={i} />
+            <IssueCard key={i.id} issue={i} />
           ))}
         </div>
       )}
@@ -476,9 +552,9 @@ function Issues() {
 }
 function IssueCard({ issue }) {
   return (
-    <Link to={`/issues/${issue._id}`} className="issue">
+    <Link to={`/issues/${issue.id}`} className="issue">
       <div className="issue-meta">
-        <span className="role">{issue.submitterRole}</span>
+        <span className="role">{issue.submitter_role}</span>
         {issue.analyzed ? (
           <span className={`priority ${issue.priority?.toLowerCase()}`}>
             {issue.priority} priority
@@ -492,7 +568,7 @@ function IssueCard({ issue }) {
       <div className="issue-bottom">
         <span>
           <MapPin size={15} />
-          {issue.location}
+          {issue.city}, {issue.state} · {issue.street}
         </span>
         <span className="arrow-circle">
           <ArrowRight size={16} />
@@ -504,7 +580,14 @@ function IssueCard({ issue }) {
 function Dashboard({ user }) {
   const nav = useNavigate(),
     [issues, setIssues] = useState([]),
-    [data, setData] = useState({ title: "", description: "", location: "" }),
+    [data, setData] = useState({
+      title: "",
+      description: "",
+      state: "",
+      city: "",
+      street: ""
+    }),
+    [voiceResetKey, setVoiceResetKey] = useState(0),
     [msg, setMsg] = useState(""),
     [err, setErr] = useState("");
   useEffect(() => {
@@ -513,28 +596,34 @@ function Dashboard({ user }) {
       .get("/issues")
       .then((r) =>
         setIssues(
-          r.data.filter(
-            (i) =>
-              i.submittedBy?._id === user.id || i.submittedBy === user.id,
-          ),
+          r.data.filter((i) => i.submitted_by === user.id)
         ),
       );
   }, [user.id]);
   const post = async (e) => {
     e.preventDefault();
     setErr("");
+
     try {
-      // FIX: We are injecting the user ID and role right here
-      const r = await api.post("/issues", {
-        ...data,
-        submittedBy: user._id || user.id,
-        submitterRole: user.role
+      const r = await api.post("/issues", data);
+
+      setIssues((prev) => [r.data.issue, ...prev]);
+
+      setData({
+        title: "",
+        description: "",
+        state: "",
+        city: "",
+        street: "",
       });
-      setIssues([r.data, ...issues]);
-      setData({ title: "", description: "", location: "" });
+
       setMsg("Your issue is now visible to the Nagrik Nova network.");
+      setVoiceResetKey((prev) => prev + 1);
     } catch (e) {
-      setErr(e.response?.data?.message || "Could not submit your report.");
+      setErr(
+        e.response?.data?.message ||
+        "Could not submit your report."
+      );
     }
   };
   if (!["citizen", "ngo"].includes(user.role)) return <Navigate to="/issues" />;
@@ -561,6 +650,11 @@ function Dashboard({ user }) {
             Be specific. Your details help partners understand where action is
             needed.
           </p>
+          <VoiceInput
+            key={voiceResetKey}
+            data={data}
+            setData={setData}
+          />
           <Field
             label="A clear title"
             value={data.title}
@@ -576,24 +670,48 @@ function Dashboard({ user }) {
               }
             />
           </label>
-        
-          <Field
-            label="Where is this happening?"
-            value={data.location}
-            onChange={(e) => setData({ ...data, location: e.target.value })}
-          />
-          <label>Capture exact spatial location (Optional)</label>
-<ARReporter 
-  onLocationSaved={(coords) => {
-    // If we successfully grabbed GPS, use that! Otherwise, fallback to the AR coordinates.
-    const finalLocation = coords.lat && coords.lng 
-      ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` 
-      : `AR Spatial: [${coords.x.toFixed(2)}, ${coords.z.toFixed(2)}]`;
 
-    // Update your form data state
-    setData({ ...data, location: finalLocation });
-  }} 
-/>
+          <div className="location-row">
+            <Field
+              label="State"
+              value={data.state}
+              onChange={(e) =>
+                setData({ ...data, state: e.target.value })
+              }
+              placeholder="Type your state"
+            />
+
+            <Field
+              label="City"
+              value={data.city}
+              onChange={(e) =>
+                setData({ ...data, city: e.target.value })
+              }
+              placeholder="Type your city"
+            />
+
+            <Field
+              label="Exact Street / Landmark / Coordinates"
+              value={data.street}
+              onChange={(e) =>
+                setData({ ...data, street: e.target.value })
+              }
+              placeholder="Example: Wakad Main Road"
+            />
+          </div>
+
+          <label>Capture exact spatial location (Optional)</label>
+          <ARReporter
+            onLocationSaved={(coords) => {
+              // If we successfully grabbed GPS, use that! Otherwise, fallback to the AR coordinates.
+              const finalLocation = coords.lat && coords.lng
+                ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`
+                : `AR Spatial: [${coords.x.toFixed(2)}, ${coords.z.toFixed(2)}]`;
+
+              // Update your form data state
+              setData({ ...data, street: finalLocation });
+            }}
+          />
           {msg && <div className="success">{msg}</div>}
           {err && <div className="error">{err}</div>}
           <button className="btn full">
@@ -605,7 +723,9 @@ function Dashboard({ user }) {
             Your reports <span>{issues.length}</span>
           </h2>
           {issues.length ? (
-            issues.map((i) => <IssueCard key={i._id} issue={i} />)
+            issues.map((i) => (
+              <IssueCard key={i.id} issue={i} />
+            ))
           ) : (
             <Empty text="Your submitted issues will appear here." />
           )}
@@ -619,54 +739,121 @@ function Detail({ user }) {
     [issue, setIssue] = useState(null),
     [busy, setBusy] = useState(false),
     [err, setErr] = useState("");
+
+  // Load the issue + saved AI analysis + saved matches
   useEffect(() => {
     api
       .get("/issues/" + id)
-      .then((r) => setIssue(r.data))
+      .then((r) => {
+        const data = r.data;
+
+        setIssue({
+          ...data.issue,
+          aiAnalysis: data.aiAnalysis || null,
+          matches: data.matches || [],
+        });
+      })
       .catch(() => setErr("This issue is no longer available."));
   }, [id]);
+
   const analyze = async () => {
     setBusy(true);
+    setErr("");
+
     try {
-      setIssue((await api.post(`/issues/${id}/analyze`)).data);
+      // Run AI analysis
+      const r = await api.post(`/issues/${id}/analyze`);
+
+      // Immediately show the saved analysis
+      setIssue({
+        ...r.data.issue,
+        aiAnalysis: r.data.analysis,
+        matches: [],
+      });
+
+      // Generate organization matches
+      try {
+        await api.post(`/issues/${id}/match-organizations`);
+
+        // Get the complete saved issue again
+        const matchResponse = await api.get(`/issues/${id}`);
+        const data = matchResponse.data;
+
+        setIssue({
+          ...data.issue,
+          aiAnalysis: data.aiAnalysis || r.data.analysis,
+          matches: data.matches || [],
+        });
+      } catch (matchError) {
+        console.error(
+          "Organization matching failed:",
+          matchError.response?.data || matchError.message
+        );
+      }
     } catch (e) {
-      setErr(e.response?.data?.message || "Analysis could not be completed.");
+      console.error(
+        "AI analysis error:",
+        e.response?.data || e
+      );
+
+      setErr(
+        e.response?.data?.message ||
+        "Analysis could not be completed."
+      );
     } finally {
       setBusy(false);
     }
   };
-  if (err && !issue)
+
+  if (err && !issue) {
     return (
       <section className="page">
         <div className="error">{err}</div>
       </section>
     );
+  }
+
   if (!issue) return <Loading />;
+
   return (
     <section className="page detail">
       <Link className="back" to="/issues">
         ← Back to issue board
       </Link>
+
       <div className="detail-top">
         <div>
           <div className="issue-meta">
-            <span className="role">{issue.submitterRole}</span>
+            <span className="role">{issue.submitter_role}</span>
+
             {issue.analyzed ? (
-              <span className={`priority ${issue.priority?.toLowerCase()}`}>
+              <span
+                className={`priority ${issue.priority?.toLowerCase()}`}
+              >
                 {issue.priority} priority
               </span>
             ) : (
-              <span className="pending">Awaiting analysis</span>
+              <span className="pending">
+                Awaiting analysis
+              </span>
             )}
           </div>
+
           <h1>{issue.title}</h1>
+
           <p className="location">
             <MapPin size={17} />
-            {issue.location}
+            {issue.street}, {issue.city}, {issue.state}
           </p>
         </div>
+
+        {/* Analyze button only appears BEFORE analysis */}
         {user.role === "admin" && !issue.analyzed && (
-          <button className="btn analyze" disabled={busy} onClick={analyze}>
+          <button
+            className="btn analyze"
+            disabled={busy}
+            onClick={analyze}
+          >
             {busy ? (
               <LoaderCircle className="spin" size={17} />
             ) : (
@@ -676,35 +863,1360 @@ function Detail({ user }) {
           </button>
         )}
       </div>
+
       <article className="detail-description">
         <h2>What the community is seeing</h2>
         <p>{issue.description}</p>
       </article>
-      {issue.analyzed ? (
+
+      {/* Show saved analysis whenever it exists */}
+      {issue.analyzed && issue.aiAnalysis ? (
         <Analysis issue={issue} />
       ) : (
         <div className="await">
           <BrainCircuit />
+
           <div>
             <h3>Waiting for civic intelligence</h3>
+
             <p>
-              Once an administrator analyzes this issue, its priority, solution
-              idea and likely partners will appear here.
+              Once an administrator analyzes this issue, its
+              priority, solution idea and likely partners will
+              appear here.
             </p>
           </div>
         </div>
       )}
+
       {err && <div className="error">{err}</div>}
     </section>
   );
 }
+
+function OrganizationDashboard({ user }) {
+  const [challenges, setChallenges] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const loadChallenges = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await api.get("/challenges");
+
+      const allChallenges = response.data || [];
+
+      /*
+       * Only keep challenges assigned to the
+       * currently logged-in organization.
+       */
+      const assigned = allChallenges.filter(
+        (challenge) => challenge.my_assignment
+      );
+
+      setChallenges(assigned);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.message ||
+        "Could not load your challenges."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadChallenges();
+  }, [user.id]);
+
+  const updateProgress = async (
+    challengeId,
+    status
+  ) => {
+    try {
+      setBusy(`${challengeId}-${status}`);
+      setError("");
+      setSuccess("");
+
+      await api.patch(
+        `/challenges/${challengeId}/progress`,
+        { status }
+      );
+
+      setSuccess(
+        status === "Completed"
+          ? "Challenge marked as completed."
+          : `Challenge moved to ${status}.`
+      );
+
+      await loadChallenges();
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.message ||
+        "Could not update challenge progress."
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  return (
+    <section className="page organization-dashboard">
+      <div className="detail-top">
+        <div>
+          <p className="eyebrow">
+            {user.role === "university"
+              ? "UNIVERSITY"
+              : user.role === "industry"
+                ? "INDUSTRY"
+                : "NGO"}{" "}
+            WORKSPACE
+          </p>
+
+          <h1>My Civic Challenges</h1>
+
+          <p className="lead">
+            View challenges assigned to your organization
+            and keep their progress updated.
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="error">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="success">
+          {success}
+        </div>
+      )}
+
+      <div className="organization-stats">
+        <div className="stat-card">
+          <span>Assigned</span>
+
+          <strong>
+            {
+              challenges.filter(
+                (c) =>
+                  c.my_assignment_status ===
+                  "Assigned"
+              ).length
+            }
+          </strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Accepted</span>
+
+          <strong>
+            {
+              challenges.filter(
+                (c) =>
+                  c.my_assignment_status ===
+                  "Accepted"
+              ).length
+            }
+          </strong>
+        </div>
+
+        <div className="stat-card">
+          <span>In Progress</span>
+
+          <strong>
+            {
+              challenges.filter(
+                (c) =>
+                  c.my_assignment_status ===
+                  "In Progress"
+              ).length
+            }
+          </strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Completed</span>
+
+          <strong>
+            {
+              challenges.filter(
+                (c) =>
+                  c.my_assignment_status ===
+                  "Completed"
+              ).length
+            }
+          </strong>
+        </div>
+      </div>
+
+      <div className="organization-challenge-list">
+        {challenges.map((challenge) => {
+          const status =
+            challenge.my_assignment_status ||
+            "Assigned";
+
+          const stages = [
+            "Assigned",
+            "Accepted",
+            "In Progress",
+            "Completed",
+          ];
+
+          const currentIndex =
+            stages.indexOf(status);
+
+          return (
+            <div
+              className="challenge-progress-card"
+              key={challenge.id}
+            >
+              <div className="challenge-progress-header">
+                <div>
+                  <span className="challenge-domain">
+                    {challenge.domain || "Civic Challenge"}
+                  </span>
+
+                  <h3>{challenge.title}</h3>
+                </div>
+
+                <span
+                  className={`challenge-status ${(
+                    challenge.my_assignment_status ||
+                    "Assigned"
+                  )
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")
+                    }`}
+                >
+                  {challenge.my_assignment_status || "Assigned"}
+                </span>
+              </div>
+
+              <p>
+                {challenge.problem_statement ||
+                  challenge.description}
+              </p>
+
+              {challenge.expected_outcome && (
+                <div className="challenge-detail">
+                  <strong>Expected outcome</strong>
+
+                  <p>
+                    {challenge.expected_outcome}
+                  </p>
+                </div>
+              )}
+
+              {/* YOUR ORGANIZATION'S PROGRESS */}
+
+              <div className="challenge-progress">
+                {[
+                  "Assigned",
+                  "Accepted",
+                  "In Progress",
+                  "Completed",
+                ].map((stage, index) => {
+                  const currentIndex = [
+                    "Assigned",
+                    "Accepted",
+                    "In Progress",
+                    "Completed",
+                  ].indexOf(
+                    challenge.my_assignment_status ||
+                    "Assigned"
+                  );
+
+                  const isCompleted =
+                    currentIndex >= index;
+
+                  const isCurrent =
+                    currentIndex === index;
+
+                  return (
+                    <React.Fragment key={stage}>
+                      <div
+                        className={`progress-stage ${isCompleted ? "completed" : ""
+                          } ${isCurrent ? "current" : ""
+                          }`}
+                      >
+                        <div className="progress-circle">
+                          {isCompleted ? (
+                            <CheckCircle2 size={17} />
+                          ) : (
+                            <span>{index + 1}</span>
+                          )}
+                        </div>
+
+                        <span>{stage}</span>
+                      </div>
+
+                      {index < 3 && (
+                        <div
+                          className={`progress-line ${currentIndex > index
+                            ? "completed"
+                            : ""
+                            }`}
+                        />
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+
+              {/* ACTIONS */}
+
+              <div className="organization-challenge-actions">
+
+                {challenge.my_assignment_status ===
+                  "Assigned" && (
+                    <button
+                      className="btn"
+                      disabled={
+                        busy ===
+                        `${challenge.id}-Accepted`
+                      }
+                      onClick={() =>
+                        updateProgress(
+                          challenge.id,
+                          "Accepted"
+                        )
+                      }
+                    >
+                      {busy ===
+                        `${challenge.id}-Accepted`
+                        ? "Accepting..."
+                        : "Accept Challenge"}
+                    </button>
+                  )}
+
+                {challenge.my_assignment_status ===
+                  "Accepted" && (
+                    <button
+                      className="btn"
+                      disabled={
+                        busy ===
+                        `${challenge.id}-In Progress`
+                      }
+                      onClick={() =>
+                        updateProgress(
+                          challenge.id,
+                          "In Progress"
+                        )
+                      }
+                    >
+                      {busy ===
+                        `${challenge.id}-In Progress`
+                        ? "Starting..."
+                        : "Start Work"}
+                    </button>
+                  )}
+
+                {challenge.my_assignment_status ===
+                  "In Progress" && (
+                    <button
+                      className="btn"
+                      disabled={
+                        busy ===
+                        `${challenge.id}-Completed`
+                      }
+                      onClick={() =>
+                        updateProgress(
+                          challenge.id,
+                          "Completed"
+                        )
+                      }
+                    >
+                      {busy ===
+                        `${challenge.id}-Completed`
+                        ? "Completing..."
+                        : "Mark Completed"}
+                    </button>
+                  )}
+
+                {challenge.my_assignment_status ===
+                  "Completed" && (
+                    <div className="success-badge">
+                      <CheckCircle2 size={16} />
+                      Challenge completed
+                    </div>
+                  )}
+
+              </div>
+
+              {/* STATUS MESSAGE */}
+
+              {challenge.my_assignment_status ===
+                "Assigned" && (
+                  <div className="progress-message">
+                    <ArrowRight size={17} />
+
+                    This challenge has been assigned
+                    to your organization. Accept it to
+                    begin working.
+                  </div>
+                )}
+
+              {challenge.my_assignment_status ===
+                "Accepted" && (
+                  <div className="progress-message">
+                    <CheckCircle2 size={17} />
+
+                    You have accepted this challenge.
+                    Start work when you are ready.
+                  </div>
+                )}
+
+              {challenge.my_assignment_status ===
+                "In Progress" && (
+                  <div className="progress-message active-message">
+                    <LoaderCircle size={17} />
+
+                    Your organization is currently
+                    working on this challenge.
+                  </div>
+                )}
+
+              {challenge.my_assignment_status ===
+                "Completed" && (
+                  <div className="progress-message completed-message">
+                    <CheckCircle2 size={17} />
+
+                    Your organization has completed
+                    this challenge.
+                  </div>
+                )}
+            </div>
+          );
+        })}
+
+        {!challenges.length && (
+          <div className="empty">
+            <Building2 size={28} />
+
+            <h3>
+              No challenges assigned yet
+            </h3>
+
+            <p>
+              When an administrator assigns a
+              civic challenge to your organization,
+              it will appear here.
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function AdminDashboard() {
+  const [issues, setIssues] = useState([]);
+  const [challenges, setChallenges] = useState([]);
+  const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [selectedOrganizations, setSelectedOrganizations] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const [issuesResponse, challengesResponse] =
+        await Promise.all([
+          api.get("/issues"),
+          api.get("/challenges"),
+        ]);
+
+      setIssues(issuesResponse.data || []);
+      setChallenges(challengesResponse.data || []);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.message ||
+        "Could not load admin dashboard."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const generateChallenge = async (issueId) => {
+    try {
+      setBusy(`generate-${issueId}`);
+      setError("");
+      setSuccess("");
+
+      await api.post(`/challenges/from-issue/${issueId}`);
+
+      setSuccess("Challenge generated successfully.");
+
+      await loadData();
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.message ||
+        "Could not generate challenge."
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const openChallenge = async (challengeId) => {
+    try {
+      setBusy(`open-${challengeId}`);
+      setError("");
+
+      const response = await api.get(
+        `/challenges/${challengeId}`
+      );
+
+      setSelectedChallenge(response.data);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.message ||
+        "Could not load challenge details."
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const assignOrganization = async (
+    challengeId,
+    organizationId
+  ) => {
+    if (!organizationId) {
+      setError("Please select a university or industry.");
+      return;
+    }
+
+    try {
+      setBusy(`assign-${organizationId}`);
+      setError("");
+      setSuccess("");
+
+      await api.post(
+        `/challenges/${challengeId}/assign`,
+        {
+          organization_user_id: organizationId,
+        }
+      );
+
+      setSuccess(
+        "Challenge assigned successfully."
+      );
+
+      await openChallenge(challengeId);
+      await loadData();
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.message ||
+        "Could not assign organization."
+      );
+    } finally {
+      setBusy("");
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  return (
+    <section className="page">
+      <div className="detail-top">
+        <div>
+          <p className="eyebrow">
+            ADMIN CONTROL CENTER
+          </p>
+
+          <h1>Civic Challenge Management</h1>
+
+          <p className="lead">
+            Turn analyzed civic problems into practical
+            challenges and connect them with organizations
+            that can work on them.
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="error">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="success">
+          {success}
+        </div>
+      )}
+
+      {/* ================================
+          OVERVIEW
+      ================================= */}
+
+      <div className="admin-stats">
+        <div className="stat-card">
+          <span>Complaints</span>
+          <strong>{issues.length}</strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Analyzed</span>
+          <strong>
+            {
+              issues.filter(
+                (i) => i.analyzed
+              ).length
+            }
+          </strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Challenges</span>
+          <strong>
+            {challenges.length}
+          </strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Active</span>
+          <strong>
+            {
+              challenges.filter(
+                (c) =>
+                  c.status === "Open" ||
+                  c.status === "In Progress"
+              ).length
+            }
+          </strong>
+        </div>
+      </div>
+
+      {/* ================================
+          STEP 1 — GENERATE CHALLENGE
+      ================================= */}
+
+      <section className="admin-section">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">
+              STEP 1
+            </p>
+
+            <h2>
+              Turn Problems Into Challenges
+            </h2>
+          </div>
+        </div>
+
+        <div className="admin-list">
+          {issues
+            .filter((issue) => issue.analyzed)
+            .map((issue) => {
+              const challenge =
+                challenges.find(
+                  (c) =>
+                    c.issue_id === issue.id
+                );
+
+              return (
+                <div
+                  className="admin-card"
+                  key={issue.id}
+                >
+                  <div className="admin-card-main">
+                    <div className="issue-meta">
+                      <span className="role">
+                        {issue.submitter_role}
+                      </span>
+
+                      <span
+                        className={`priority ${issue.priority?.toLowerCase()}`}
+                      >
+                        {issue.priority}
+                      </span>
+                    </div>
+
+                    <h3>
+                      {issue.title}
+                    </h3>
+
+                    <p>
+                      {issue.description}
+                    </p>
+
+                    <span className="location">
+                      <MapPin size={15} />
+
+                      {issue.street},{" "}
+                      {issue.city},{" "}
+                      {issue.state}
+                    </span>
+                  </div>
+
+                  <div className="admin-card-action">
+                    {challenge ? (
+                      <div className="success-badge">
+                        <CheckCircle2
+                          size={16}
+                        />
+
+                        Challenge generated
+                      </div>
+                    ) : (
+                      <button
+                        className="btn analyze"
+                        disabled={
+                          busy ===
+                          `generate-${issue.id}`
+                        }
+                        onClick={() =>
+                          generateChallenge(
+                            issue.id
+                          )
+                        }
+                      >
+                        {busy ===
+                          `generate-${issue.id}` ? (
+                          <LoaderCircle
+                            className="spin"
+                            size={17}
+                          />
+                        ) : (
+                          <Sparkles
+                            size={17}
+                          />
+                        )}
+
+                        {busy ===
+                          `generate-${issue.id}`
+                          ? "Generating..."
+                          : "Generate Challenge"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+          {!issues.filter(
+            (i) => i.analyzed
+          ).length && <Empty />}
+        </div>
+      </section>
+
+      {/* ================================
+          STEP 2 — CHALLENGE + ASSIGNMENT
+      ================================= */}
+
+      <section className="admin-section">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">
+              STEP 2
+            </p>
+
+            <h2>
+              Assign Challenges
+            </h2>
+          </div>
+        </div>
+
+        <div className="admin-list">
+          {challenges.map(
+            (challenge) => (
+              <div
+                className="admin-card challenge-card"
+                key={challenge.id}
+              >
+                <div className="admin-card-main">
+                  <div className="issue-meta">
+                    <span className="role">
+                      {challenge.domain ||
+                        "Civic"}
+                    </span>
+
+                    <span className="pending">
+                      {challenge.status}
+                    </span>
+                  </div>
+
+                  <h3>
+                    {challenge.title}
+                  </h3>
+
+                  <p>
+                    {challenge.problem_statement ||
+                      challenge.description}
+                  </p>
+
+                  {challenge.expected_outcome && (
+                    <div className="challenge-detail">
+                      <strong>
+                        Expected outcome
+                      </strong>
+
+                      <p>
+                        {
+                          challenge.expected_outcome
+                        }
+                      </p>
+                    </div>
+                  )}
+
+                  {Array.isArray(
+                    challenge.required_expertise
+                  ) &&
+                    challenge
+                      .required_expertise
+                      .length > 0 && (
+                      <div className="tag-list">
+                        {challenge.required_expertise.map(
+                          (
+                            item,
+                            index
+                          ) => (
+                            <span
+                              key={
+                                index
+                              }
+                            >
+                              {item}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    )}
+
+                  {/* ASSIGNMENT AREA */}
+                  {selectedChallenge?.challenge
+                    ?.id === challenge.id && (
+                      <div className="assignment-panel">
+                        <h4>
+                          Recommended organizations
+                        </h4>
+
+                        {selectedChallenge.matches
+                          ?.length ? (
+                          <div className="organization-list">
+                            {selectedChallenge.matches.map(
+                              (match) => {
+                                const organization =
+                                  match.users;
+
+                                if (
+                                  !organization
+                                )
+                                  return null;
+
+                                const details =
+                                  organization.role ===
+                                    "university"
+                                    ? organization.university_details
+                                    : organization.industry_details;
+
+                                return (
+                                  <div
+                                    className="organization-row"
+                                    key={
+                                      match.id
+                                    }
+                                  >
+                                    <div className="organization-info">
+                                      <div className="partner-icon">
+                                        {organization.role ===
+                                          "university" ? (
+                                          <Building2
+                                            size={
+                                              17
+                                            }
+                                          />
+                                        ) : (
+                                          <Users
+                                            size={
+                                              17
+                                            }
+                                          />
+                                        )}
+                                      </div>
+
+                                      <div>
+                                        <span className="role">
+                                          {
+                                            organization.role
+                                          }
+                                        </span>
+
+                                        <h4>
+                                          {
+                                            organization.name
+                                          }
+                                        </h4>
+
+                                        <p>
+                                          {Array.isArray(
+                                            match.matched_expertise
+                                          )
+                                            ? match.matched_expertise.join(
+                                              ", "
+                                            )
+                                            : "Relevant civic capabilities"}
+                                        </p>
+
+                                        {details
+                                          ?.city && (
+                                            <small>
+                                              {
+                                                details.city
+                                              }
+                                              ,{" "}
+                                              {
+                                                details.state
+                                              }
+                                            </small>
+                                          )}
+                                      </div>
+                                    </div>
+
+                                    <div className="organization-action">
+                                      {match.status ===
+                                        "Assigned" ? (
+                                        <span className="assigned-badge">
+                                          <CheckCircle2
+                                            size={
+                                              15
+                                            }
+                                          />
+                                          Assigned
+                                        </span>
+                                      ) : (
+                                        <button
+                                          className="btn small"
+                                          disabled={
+                                            busy ===
+                                            `assign-${organization.id}`
+                                          }
+                                          onClick={() =>
+                                            assignOrganization(
+                                              challenge.id,
+                                              organization.id
+                                            )
+                                          }
+                                        >
+                                          {busy ===
+                                            `assign-${organization.id}` ? (
+                                            <LoaderCircle
+                                              className="spin"
+                                              size={
+                                                15
+                                              }
+                                            />
+                                          ) : (
+                                            <ArrowRight
+                                              size={
+                                                15
+                                              }
+                                            />
+                                          )}
+
+                                          Assign
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        ) : (
+                          <p className="muted">
+                            No matched organizations
+                            found.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                </div>
+
+                <div className="admin-card-action">
+                  <button
+                    className="btn secondary"
+                    disabled={
+                      busy ===
+                      `open-${challenge.id}`
+                    }
+                    onClick={() =>
+                      openChallenge(
+                        challenge.id
+                      )
+                    }
+                  >
+                    {busy ===
+                      `open-${challenge.id}` ? (
+                      <LoaderCircle
+                        className="spin"
+                        size={16}
+                      />
+                    ) : (
+                      <Users size={16} />
+                    )}
+
+                    {selectedChallenge?.challenge
+                      ?.id === challenge.id
+                      ? "Refresh Matches"
+                      : "View Matches"}
+                  </button>
+                </div>
+              </div>
+            )
+          )}
+
+          {!challenges.length && (
+            <Empty />
+          )}
+        </div>
+      </section>
+
+      {/* ================================
+    STEP 3 — PROGRESS
+================================= */}
+
+      <section className="admin-section">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">STEP 3</p>
+
+            <h2>Live Challenge Progress</h2>
+
+            <p className="section-description">
+              Track the progress of every organization working on
+              each civic challenge.
+            </p>
+          </div>
+        </div>
+
+        <div className="challenge-progress-list">
+          {challenges.map((challenge) => {
+            /*
+             * New backend:
+             * challenge.assignments
+             *
+             * Old backend fallback:
+             * challenge.matches
+             */
+            const assignments =
+              challenge.assignments?.length
+                ? challenge.assignments
+                : (challenge.matches || []).filter(
+                  (match) => match.status !== "Rejected"
+                );
+
+            const stages = [
+              "Assigned",
+              "Accepted",
+              "In Progress",
+              "Completed",
+            ];
+
+            return (
+              <div
+                className="challenge-progress-card"
+                key={challenge.id}
+              >
+                {/* =========================
+              CHALLENGE HEADER
+          ========================== */}
+
+                <div className="challenge-progress-header">
+                  <div>
+                    <span className="challenge-domain">
+                      {challenge.domain || "Civic Challenge"}
+                    </span>
+
+                    <h3>{challenge.title}</h3>
+                  </div>
+
+                  <span
+                    className={`challenge-status ${challenge.status
+                      ?.toLowerCase()
+                      .replace(/\s+/g, "-")
+                      }`}
+                  >
+                    {challenge.status || "Open"}
+                  </span>
+                </div>
+
+                {/* =========================
+              NO ASSIGNMENTS
+          ========================== */}
+
+                {assignments.length === 0 ? (
+                  <>
+                    <div className="not-assigned">
+                      <Users size={17} />
+
+                      <span>
+                        This challenge has not been assigned
+                        to any organization yet.
+                      </span>
+                    </div>
+
+                    <div className="progress-message">
+                      <CircleAlert size={17} />
+
+                      Assign this challenge to a university
+                      or industry to start tracking progress.
+                    </div>
+                  </>
+                ) : (
+                  /* =========================
+                     MULTIPLE ORGANIZATIONS
+                  ========================== */
+
+                  <div className="assigned-organizations-list">
+                    {assignments.map((assignment) => {
+                      const status =
+                        assignment.status || "Assigned";
+
+                      const currentIndex =
+                        stages.indexOf(status);
+
+                      const organization =
+                        assignment.users || null;
+
+                      const organizationName =
+                        organization?.name ||
+                        "Assigned organization";
+
+                      return (
+                        <div
+                          className="assigned-organization-progress"
+                          key={assignment.id}
+                        >
+                          {/* ORGANIZATION */}
+
+                          <div className="assigned-organization">
+                            {organization?.role ===
+                              "industry" ? (
+                              <Users size={17} />
+                            ) : (
+                              <Building2 size={17} />
+                            )}
+
+                            <div>
+                              <span>Assigned to</span>
+
+                              <strong>
+                                {organizationName}
+                              </strong>
+
+                              {organization?.role && (
+                                <small>
+                                  {organization.role}
+                                </small>
+                              )}
+                            </div>
+
+                            <span
+                              className={`challenge-status ${status
+                                .toLowerCase()
+                                .replace(/\s+/g, "-")
+                                }`}
+                            >
+                              {status}
+                            </span>
+                          </div>
+
+                          {/* =====================
+                        PROGRESS TRACKER
+                    ====================== */}
+
+                          <div className="challenge-progress">
+                            {stages.map(
+                              (stage, index) => {
+                                const isCompleted =
+                                  currentIndex >= index;
+
+                                const isCurrent =
+                                  currentIndex === index;
+
+                                return (
+                                  <React.Fragment
+                                    key={stage}
+                                  >
+                                    <div
+                                      className={`progress-stage ${isCompleted
+                                        ? "completed"
+                                        : ""
+                                        } ${isCurrent
+                                          ? "current"
+                                          : ""
+                                        }`}
+                                    >
+                                      <div className="progress-circle">
+                                        {isCompleted ? (
+                                          <CheckCircle2
+                                            size={17}
+                                          />
+                                        ) : (
+                                          <span>
+                                            {index + 1}
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      <span>
+                                        {stage}
+                                      </span>
+                                    </div>
+
+                                    {index <
+                                      stages.length -
+                                      1 && (
+                                        <div
+                                          className={`progress-line ${currentIndex >
+                                            index
+                                            ? "completed"
+                                            : ""
+                                            }`}
+                                        />
+                                      )}
+                                  </React.Fragment>
+                                );
+                              }
+                            )}
+                          </div>
+
+                          {/* =====================
+                        STATUS MESSAGE
+                    ====================== */}
+
+                          {status === "Completed" && (
+                            <div className="progress-message completed-message">
+                              <CheckCircle2 size={17} />
+
+                              Challenge completed successfully
+                              by this organization.
+                            </div>
+                          )}
+
+                          {status === "In Progress" && (
+                            <div className="progress-message active-message">
+                              <LoaderCircle size={17} />
+
+                              Organization is currently working
+                              on this challenge.
+                            </div>
+                          )}
+
+                          {status === "Accepted" && (
+                            <div className="progress-message">
+                              <CheckCircle2 size={17} />
+
+                              Organization has accepted the
+                              challenge and is ready to begin work.
+                            </div>
+                          )}
+
+                          {status === "Assigned" && (
+                            <div className="progress-message">
+                              <ArrowRight size={17} />
+
+                              Challenge has been assigned and is
+                              waiting for organization acceptance.
+                            </div>
+                          )}
+
+                          {status === "Rejected" && (
+                            <div className="progress-message rejected-message">
+                              <CircleAlert size={17} />
+
+                              This organization rejected the
+                              challenge.
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {!challenges.length && (
+            <div className="empty">
+              <h3>No challenges yet</h3>
+
+              <p>
+                Generate a challenge from an analyzed civic
+                complaint to start tracking its progress.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+    </section>
+  );
+}
+
 function Analysis({ issue }) {
+  const analysis = issue.aiAnalysis;
+
+  if (!analysis) {
+    return (
+      <div className="await">
+        <BrainCircuit />
+        <div>
+          <h3>AI analysis is available</h3>
+          <p>
+            Refresh the page or analyze this issue again to view the
+            complete civic analysis.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <section className="analysis">
+
+      {/* Header */}
       <div className="analysis-head">
         <div className="icon-box green">
           <BrainCircuit />
         </div>
+
         <div>
           <div className="eyebrow">AI civic brief</div>
           <h2>
@@ -712,54 +2224,318 @@ function Analysis({ issue }) {
           </h2>
         </div>
       </div>
+
+      {/* Basic analysis */}
       <div className="analysis-grid">
+
         <div>
           <small>Domain</small>
-          <strong>{issue.domain}</strong>
+          <strong>{analysis.domain || issue.domain || "Not identified"}</strong>
         </div>
+
         <div>
           <small>Priority</small>
-          <strong>{issue.priority}</strong>
+          <strong>{issue.priority || "Medium"}</strong>
         </div>
+
+        <div>
+          <small>Urgency</small>
+          <strong>{analysis.urgency || "Not identified"}</strong>
+        </div>
+
+        <div className="wide">
+          <small>Actual problem</small>
+          <p>{analysis.actual_problem}</p>
+        </div>
+
         <div className="wide">
           <small>Required expertise</small>
+
           <div className="tags">
-            {issue.requiredExpertise?.map((x) => (
-              <span key={x}>{x}</span>
-            ))}
+            {Array.isArray(analysis.required_expertise) &&
+              analysis.required_expertise.map((x, index) => (
+                <span key={index}>{x}</span>
+              ))}
           </div>
         </div>
+
       </div>
+
+      {/* Root cause */}
       <div className="solution">
         <Sparkles size={19} />
+
         <div>
-          <small>Suggested solution pathway</small>
-          <p>{issue.solutionIdea}</p>
+          <small>Root cause</small>
+
+          <p>
+            {analysis.root_cause || "No root cause identified."}
+          </p>
+
+          {analysis.root_cause_reasoning && (
+            <>
+              <small>Reasoning</small>
+              <p>{analysis.root_cause_reasoning}</p>
+            </>
+          )}
         </div>
       </div>
-      <h2 className="partners-title">
-        Potential collaborators{" "}
-        <span>{issue.matchedOrganizations?.length || 0}</span>
-      </h2>
-      <div className="partners">
-        {issue.matchedOrganizations?.map((m) => (
-          <div className="partner" key={m.userId}>
-            <div className="partner-icon">
-              {m.role === "university" ? <Building2 /> : <Leaf />}
-            </div>
-            <div>
-              <span className="role">{m.role}</span>
-              <h3>{m.name}</h3>
-              <p>Aligned on {m.expertise.join(", ")}</p>
-            </div>
-          </div>
-        )) || (
-          <p>No registered organisation currently matches this expertise.</p>
+
+      {/* Impacts */}
+      <div className="analysis-block">
+        <h2>Impact</h2>
+
+        {Array.isArray(analysis.impacts) ? (
+          <ul>
+            {analysis.impacts.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>{analysis.impacts}</p>
         )}
       </div>
+
+      {/* Recommended actions */}
+      <div className="analysis-block">
+        <h2>Recommended actions</h2>
+
+        {Array.isArray(analysis.recommended_actions) ? (
+          <ol>
+            {analysis.recommended_actions.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ol>
+        ) : (
+          <p>{analysis.recommended_actions}</p>
+        )}
+      </div>
+
+      {/* Preventive measures */}
+      <div className="analysis-block">
+        <h2>Preventive measures</h2>
+
+        {Array.isArray(analysis.preventive_measures) ? (
+          <ul>
+            {analysis.preventive_measures.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>{analysis.preventive_measures}</p>
+        )}
+      </div>
+
+      {/* Technology + data */}
+      <div className="analysis-block">
+        <h2>Technology & data requirements</h2>
+
+        {Array.isArray(analysis.technology_data_requirements) ? (
+          <ul>
+            {analysis.technology_data_requirements.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>{analysis.technology_data_requirements}</p>
+        )}
+      </div>
+
+      {/* Practical solution */}
+      <div className="solution">
+        <Sparkles size={19} />
+
+        <div>
+          <small>Suggested solution pathway</small>
+
+          <p>
+            {analysis.practical_solution ||
+              "No practical solution was generated."}
+          </p>
+        </div>
+      </div>
+
+      {/* Confidence */}
+      <div className="analysis-block">
+        <h2>AI confidence</h2>
+        <p>{analysis.confidence || "Not specified"}</p>
+      </div>
+
+      {/* Verification */}
+      {analysis.verification_required && (
+        <div className="analysis-block">
+          <h2>Verification required</h2>
+
+          <p>
+            {analysis.verification_notes ||
+              "Some information should be verified on the ground."}
+          </p>
+        </div>
+      )}
+
+      {/* Historical evidence */}
+      {analysis.evidence_summary && (
+        <div className="analysis-block">
+          <h2>Historical evidence</h2>
+          <p>
+            {typeof analysis.evidence_summary === "string"
+              ? analysis.evidence_summary
+              : JSON.stringify(analysis.evidence_summary)}
+          </p>
+        </div>
+      )}
+      {/* Matched organizations */}
+      <div className="analysis-block organization-matches">
+
+        <div className="organization-heading">
+          <div>
+            <div className="eyebrow">
+              <Users size={15} /> Civic network
+            </div>
+
+            <h2>Recommended universities & industries</h2>
+
+            <p>
+              Organizations are matched using the expertise and civic
+              domain identified by the AI analysis.
+            </p>
+          </div>
+
+          <span className="match-count">
+            {issue.matches?.length || 0}
+          </span>
+        </div>
+
+
+        {issue.matches?.length > 0 ? (
+
+          <div className="organization-list">
+
+            {issue.matches.map((match) => {
+
+              const organization = match.users || {};
+
+              const role = organization.role;
+
+              const details =
+                role === "university"
+                  ? organization.university_details || {}
+                  : organization.industry_details || {};
+
+              return (
+                <div
+                  className="organization-card"
+                  key={match.id}
+                >
+
+                  {/* Icon */}
+                  <div className="organization-icon">
+
+                    {role === "university" ? (
+                      <Building2 size={22} />
+                    ) : (
+                      <Leaf size={22} />
+                    )}
+
+                  </div>
+
+
+                  {/* Main information */}
+                  <div className="organization-info">
+
+                    <div className="organization-top">
+
+                      <span className="role">
+                        {role === "university"
+                          ? "University"
+                          : "Industry"}
+                      </span>
+
+                      <strong className="match-score">
+                        {match.match_score}% match
+                      </strong>
+
+                    </div>
+
+
+                    <h3>
+                      {organization.name}
+                    </h3>
+
+
+                    {/* Location */}
+                    {(details.city || details.state) && (
+                      <p className="organization-location">
+                        <MapPin size={14} />
+
+                        {details.city}
+                        {details.city && details.state
+                          ? ", "
+                          : ""}
+                        {details.state}
+                      </p>
+                    )}
+
+
+                    {/* Matched expertise */}
+                    {match.matched_expertise?.length > 0 && (
+                      <div className="matched-capabilities">
+
+                        <small>
+                          Matched expertise
+                        </small>
+
+                        <div className="tags">
+
+                          {match.matched_expertise.map(
+                            (expertise, index) => (
+                              <span key={index}>
+                                {expertise}
+                              </span>
+                            )
+                          )}
+
+                        </div>
+
+                      </div>
+                    )}
+
+
+                    {/* Why matched */}
+                    {match.match_reason && (
+                      <p className="match-reason">
+                        {match.match_reason}
+                      </p>
+                    )}
+
+                  </div>
+
+                </div>
+              );
+
+            })}
+
+          </div>
+
+        ) : (
+
+          <div className="empty">
+            <Users />
+
+            <p>
+              No university or industry matches have been
+              generated for this issue yet.
+            </p>
+          </div>
+
+        )}
+
+      </div>
+
     </section>
   );
 }
+
 function Loading() {
   return (
     <div className="loading">
@@ -767,6 +2543,7 @@ function Loading() {
     </div>
   );
 }
+
 function Empty({ text = "No issues have been shared yet." }) {
   return (
     <div className="empty">
@@ -775,6 +2552,8 @@ function Empty({ text = "No issues have been shared yet." }) {
     </div>
   );
 }
+
+
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <App />

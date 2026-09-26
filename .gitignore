@@ -1,2 +1,8 @@
 node_modules/
 .env
+# Large datasets - stored outside GitHub
+backend/data/cleaned/nagriknova_historical_complaints.jsonl
+backend/data/cleaned/nagriknova_historical_complaints.csv
+backend/data/raw/bmc_train.csv
+backend/data/industry-demo-credentials.json
+backend/data/organization-demo-credentials.json
